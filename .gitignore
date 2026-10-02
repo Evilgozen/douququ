@@ -1,0 +1,11 @@
+node_modules/
+exports/
+dist/
+*.log
+.aksk
+cookies.json
+public/tts/
+output/
+input/
+.codex/
+__pycache__/

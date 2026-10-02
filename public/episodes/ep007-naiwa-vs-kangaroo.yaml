@@ -1,0 +1,91 @@
+id: ep007-naiwa-vs-kangaroo
+title: 奶娃 VS 美团袋鼠
+subtitle: 毒气风筝流 VS 外卖轰炸
+seed: 777
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+physics:
+  knockback: 0.3
+
+# 奶娃：大脚踹击 + 身后毒气 + 骑车狂飙（5s 必摔倒自伤）；袋鼠：袋鼠拳 + 外卖轮盘按餐品定伤害
+fighters:
+  - id: naiwa
+    name: 奶娃
+    behavior: random            # 乱跑洒毒气，路径就是毒气走廊
+    sprite: sprites/naiwa.png
+    stateSprites:
+      bike: sprites/naiwa-bike.png    # 骑车冲刺立绘（替换程序化单车）
+      stun: sprites/naiwa-crash.png   # 摔倒眩晕立绘（替换旋转晃动）
+    hp: 1300
+    atk: 26
+    atkInterval: 1.0
+    speed: 165
+    radius: 88
+    combo: [1, 1, 1.6]
+    kickFx: true                # 出手时大脚放大踹击（JS 程序化绘制）
+    weapon: { name: 大脚踹, kind: melee, damage: 60, every: 5, knockback: 5, reachMult: 2 }
+    gasTrail: { every: 0.8, radius: 125, dur: 3.2, damage: 38, tick: 0.4 }
+    bikeRush: { every: 12, delay: 4, speedMult: 2, dur: 5, gasEvery: 0.3, crashDamage: 80, crashStun: 1.2 }
+
+  - id: kangaroo
+    name: 美团袋鼠
+    behavior: random            # 中央带自由游走（外卖轮盘任意距离投掷，近了才出拳）
+    sprite: sprites/kangaroo.png
+    hp: 1450
+    atk: 40
+    atkInterval: 1.3
+    speed: 118
+    radius: 96
+    range: 230
+    combo: [1, 1, 1.8]
+    weapon: { name: 袋鼠拳, kind: melee, damage: 75, every: 5.5 }
+    takeout:
+      every: 5.5
+      speed: 300
+      items:
+        - { name: 珍珠奶茶, damage: 40, sprite: sprites/item-milktea.png }
+        - { name: 冰美式, damage: 35, slowSec: 2, slowMult: 0.75 }   # 冰饮：命中减速
+        - { name: 草莓蛋糕, damage: 48 }
+        - { name: 麻辣烫, damage: 78 }
+        - { name: 麻辣火锅, damage: 120, sprite: sprites/item-hotpot.png }                            # 轮盘大菜：一锅 140
+
+twists:
+  - trigger: { timeAt: 10, fighter: kangaroo }
+    banner: "爆单模式"
+    caption: "午高峰来了！袋鼠派单速度暴涨，外卖跟不要钱一样砸"
+    slowmo: 1.0
+    effect: { type: berserk, atkMultiplier: 1.4, intervalMultiplier: 0.7 }
+  - trigger: { timeAt: 15, fighter: naiwa }
+    banner: "韭菜盒子大餐"
+    caption: "奶娃偷吃了韭菜盒子——毒气伤害直接翻倍"
+    slowmo: 1.0
+    effect: { type: berserk, atkMultiplier: 2 }
+  - trigger: { hpBelowPct: 0.25, fighter: naiwa }
+    banner: "最后的倔强"
+    caption: "奶娃拼了！踹击伤害暴涨，赌的就是袋鼠敢贴脸"
+    slowmo: 1.2
+    effect: { type: berserk, atkMultiplier: 2.5 }
+
+captions:
+  - { t: 4.6, text: "奶娃开战就放毒气，身后一路绿色烟雾" }
+  - { t: 8,   text: "袋鼠掏出外卖轮盘：奶茶、蛋糕、火锅轮着砸" }
+  - { t: 13,  text: "奶娃骑上小单车狂飙——但5秒后必定摔倒" }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.5
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】奶娃 VS 美团袋鼠：毒气战外卖侠
+  shortTitle: 奶娃毒气战美团袋鼠
+  desc: "奶娃毒气+骑车狂飙（5秒必摔），美团袋鼠外卖轮盘轰炸：奶茶45、火锅160！谁先倒下？"
+  tags: [电子斗蛐蛐, 斗蛐蛐, 搞笑, 奶娃, 外卖]
+  tid: 138
+  coverAt: 18

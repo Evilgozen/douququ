@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小球轨迹与列车 · 机制小样</title>
+    <style>
+      :root { color-scheme: dark; font-family: "Noto Sans CJK SC", "PingFang SC", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #080a11; color: #e9eef9; }
+      header { padding: 14px 24px; border-bottom: 1px solid #242b3e; }
+      header a { color: #92d7ff; text-decoration: none; margin-right: 18px; }
+      header strong { font-size: 20px; }
+      main { max-width: 1160px; margin: 22px auto; padding: 0 18px; display: grid; grid-template-columns: minmax(0, 720px) 1fr; gap: 24px; }
+      canvas { display: block; width: 100%; aspect-ratio: 1; border: 1px solid #353d54; border-radius: 12px; background: #0d111c; }
+      aside { padding: 18px; border: 1px solid #283047; border-radius: 12px; background: #111827; }
+      h1 { font-size: 22px; margin: 0 0 12px; }
+      p { color: #a9b7d0; line-height: 1.65; }
+      label { display: block; margin-top: 18px; color: #c6d4ed; }
+      input { width: 100%; margin-top: 8px; }
+      button { margin: 18px 8px 0 0; padding: 9px 16px; border: 1px solid #52718e; border-radius: 8px; background: #1c354c; color: #fff; cursor: pointer; }
+      #status { margin-top: 20px; color: #f9ce7c; line-height: 1.7; }
+      code { color: #9ee6c3; }
+      @media (max-width: 850px) { main { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header><a href="/">← 返回出片机</a><strong>确定性弹球 + 铺轨列车</strong></header>
+    <main>
+      <canvas id="stage" width="720" height="720"></canvas>
+      <aside>
+        <h1>轨迹如何变成技能</h1>
+        <p>两个球以固定速度运动，撞墙反射、碰球交换法线速度。列车长每走 10 像素留一个轨道点，车头和车厢再按累计路程沿轨道前进。</p>
+        <p>轨道是预告；只有列车经过吸血鬼时造成固定 12 点伤害。吸血鬼碰到列车长造成 5 点伤害并回复 3 点。全程无随机数，重开会得到同一局。</p>
+        <label for="speed">小球初始速度：<span id="speedValue">170</span> px/s</label>
+        <input id="speed" type="range" min="100" max="280" step="10" value="170" />
+        <button id="restart">用该速度重开</button><button id="pause">暂停</button>
+        <div id="status"></div>
+        <p>核心代码：<code>src/core/trainDemo.ts</code>。这个小样独立于正式剧本，便于先调准运动手感。</p>
+      </aside>
+    </main>
+    <script type="module" src="/src/ui/trainDemo.ts"></script>
+  </body>
+</html>

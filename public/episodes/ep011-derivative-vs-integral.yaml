@@ -1,0 +1,115 @@
+id: ep011-derivative-vs-integral
+title: 导数 VS 积分
+subtitle: 微积分内战：牛顿-莱布尼茨 300 年恩怨今日了断
+seed: 1687                # 牛顿《原理》出版年
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+physics:
+  knockback: 0.3
+
+# 三百年前牛顿和莱布尼茨抢微积分发明权，今天让两位本体亲自打一场
+# 导数 = 瞬时变化率：全场最快，斜率连击 [1,2,3]，洛必达法则反转
+# 积分 = 面积累积：慢速重坦，面积翻倍连击 [1,2,4,8]，微积分基本定理回血 1/3
+fighters:
+  - id: derivative
+    name: 导数
+    behavior: chase             # 万有引力：追着积分跑
+    sprite: sprites/daoshu.png
+    stateSprites:
+      berserk: sprites/daoshu-berserk.png
+    hp: 2450
+    atk: 32
+    atkInterval: 0.5            # 瞬时：出手全場最快
+    speed: 215
+    radius: 72
+    range: 150
+    combo: [1, 2, 3]            # 斜率递增
+    skills:
+      - { name: 极限, every: 6, multiplier: 2, healPct: 0.06 }   # 趋近于
+    weapon: { name: 瞬时速度, kind: melee, damage: 110, every: 2, reachMult: 2.0 }
+
+  - id: integral
+    name: 积分
+    behavior: random            # 面积摊开，稳步累积
+    sprite: sprites/jifen.png
+    stateSprites:
+      berserk: sprites/jifen-berserk.png
+    hp: 1850
+    atk: 34
+    atkInterval: 1.4
+    speed: 92
+    radius: 100
+    range: 260
+    combo: [1, 2, 3, 5]         # 面积逐段加倍，第 5 拍是巨 crit
+    skills:
+      - { name: 面积累积, every: 7, multiplier: 3, healPct: 0.04 }
+    weapon: { name: 抛物线弓形, kind: projectile, damage: 140, every: 6, speed: 380, arc: true }
+    takeout:
+      every: 1.2                # 微元：把面积切成小矩形一块块扔
+      speed: 420
+      items:
+        - { name: dx, damage: 15 }
+        - { name: dx, damage: 15 }
+        - { name: dx, damage: 15 }
+        - { name: dx, damage: 15 }
+
+twists:
+  - trigger: { timeAt: 10, fighter: integral }
+    effect: { type: statMultiply, atkMultiplier: 1.3, targets: self }
+    banner: 面积累积中
+    caption: 积分的伤害像面积一样越堆越高
+    slowmo: 0.5
+  - trigger: { hpBelowPct: 0.3, fighter: derivative }
+    effect:
+      type: berserk
+      atkMultiplier: 2.718      # d/dx e^x = e^x：求导不变的函数
+      intervalMultiplier: 0.6
+      speedMultiplier: 1.35
+      healPct: 0.3
+      durationSec: 15
+    banner: 洛必达法则
+    caption: 零比零型！上下同时求导，瞬间提速
+    slowmo: 1.0
+  - trigger: { hpBelowPct: 0.3, fighter: integral }
+    effect:
+      type: berserk
+      atkMultiplier: 1.2
+      healPct: 0.333            # ∫₀¹x²dx = 1/3：回血量就是定积分答案
+    banner: "∫₀¹x²dx=1/3"
+    caption: 微积分基本定理！上线下线一接，回血三分之一
+    slowmo: 1.0
+
+timeLimit: 48
+suddenDeathAtkMultiplier: 6
+
+captions:
+  - { t: 0.5, text: 三百年前牛顿和莱布尼茨抢微积分发明权, dur: 3 }
+  - { t: 4.6, text: 今天让导数和积分亲自打一场, dur: 3 }
+  - { t: 8.2, text: 红方导数，速度就是它的本体, dur: 3 }
+  - { t: 12, text: 蓝方积分，慢是慢，伤害在累积, dur: 3 }
+  - { t: 16, text: 一个算瞬时，一个算总和，谁才是微积分一哥, dur: 3.2 }
+  - { t: 21.5, text: 导数血条见底，该请出洛必达了, dur: 2.6 }
+  - { t: 26.5, text: 积分回血三分之一，这可是真算过的定积分, dur: 3 }
+  - { t: 31, text: 三百年的恩怨，就差最后一刀, dur: 3 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.5
+
+audio:
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】导数大战积分：微积分内战300年恩怨
+  shortTitle: 导数大战积分
+  desc: "牛顿和莱布尼茨抢了300年的微积分发明权，今天让导数和积分亲自打一场！导数出手全場最快（瞬时变化率），积分面积翻倍连击越打越痛。导数残血触发洛必达法则瞬间提速，积分回敬微积分基本定理回血三分之一——∫₀¹x²dx=1/3 是真算的。谁能赢？"
+  tags: [电子斗蛐蛐, 数学, 微积分, 导数, 积分, 搞笑]
+  tid: 138
+  coverAt: 22

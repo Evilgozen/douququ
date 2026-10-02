@@ -1,0 +1,54 @@
+[
+  {
+    "file": "ep001-tony-vs-boxer.yaml",
+    "label": "EP01 托尼老师 VS 拳王（数值碾压·觉醒反转）"
+  },
+  {
+    "file": "ep002-guard-vs-intern.yaml",
+    "label": "EP02 保安大爷 VS 实习生（数值差1000倍·突然死亡）"
+  },
+  {
+    "file": "ep003-takeout-vs-taxi.yaml",
+    "label": "EP03 外卖骑手 VS 网约车司机（弹板乱斗·平台内战）"
+  },
+  {
+    "file": "ep004-coach-vs-coder.yaml",
+    "label": "EP04 健身教练 VS 程序员（加速带竞速·突然死亡）"
+  },
+  {
+    "file": "ep005-factorial-vs-exponential.yaml",
+    "label": "EP05 阶乘 VS 指数（数列对决·每刀必掉血）"
+  },
+  {
+    "file": "ep006-catalan-vs-fibonacci.yaml",
+    "label": "EP06 卡特兰数 VS 斐波那契（数列对决·组合数学）"
+  },
+  {
+    "file": "ep007-naiwa-vs-kangaroo.yaml",
+    "label": "EP07 奶娃 VS 美团袋鼠（毒气风筝 VS 外卖轮盘）"
+  },
+  {
+    "file": "ep009-yanghui-vs-fibonacci.yaml",
+    "label": "EP09 杨辉三角 VS 斐波那契（数学同门内战·中央项252）"
+  },
+  {
+    "file": "ep010-pi-vs-euler.yaml",
+    "label": "EP10 圆周率 VS 欧拉公式（第5击重击·残血开盾）"
+  },
+  {
+    "file": "ep011-derivative-vs-integral.yaml",
+    "label": "EP11 导数 VS 积分（微积分内战·牛顿-莱布尼茨恩怨）"
+  },
+  {
+    "file": "ep012-conductor-vs-assassin.yaml",
+    "label": "EP12 列车长 VS 刺客（双倍速列车·蓄力突刺）"
+  },
+  {
+    "file": "ep013-conductor-vs-sandevistan.yaml",
+    "label": "EP13 列车长 VS 斯安威斯坦（停时穿透·残影重叠判定）"
+  },
+  {
+    "file": "ep014-assassin-vs-sandevistan.yaml",
+    "label": "EP14 刺客 VS 斯安威斯坦（蓄力突刺·停时残影）"
+  }
+]

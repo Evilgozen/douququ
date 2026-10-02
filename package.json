@@ -1,0 +1,42 @@
+{
+  "name": "douququ",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "电子斗蛐蛐出片管线：剧本YAML → 确定性战斗模拟 → 1080x1920竖屏成片",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "check:readable": "node --import tsx scripts/check_readable.ts",
+    "check:train-demo": "node --import tsx scripts/check_train_demo.ts",
+    "check:rail-battle": "node --import tsx scripts/check_rail_battle.ts",
+    "check:speed-echo": "node --import tsx scripts/check_speed_echo.ts",
+    "check:assassin-speedster": "node --import tsx scripts/check_assassin_speedster.ts",
+    "render": "tsx src/cli/render.ts",
+    "tts": "tsx src/cli/tts.ts",
+    "cover": "tsx src/cli/cover.ts",
+    "pack": "tsx src/cli/pack.ts",
+    "record": "tsx src/cli/record.ts",
+    "login:bili": "python3 scripts/bili_login.py",
+    "publish:bili": "python3 scripts/publish_bili.py",
+    "transcode": "node scripts/transcode.mjs",
+    "sprite": "tsx src/cli/sprite.ts",
+    "sprite:norm": "tsx src/cli/sprite.ts --norm",
+    "rl": "tsx src/cli/rl.ts",
+    "rl:serve": "tsx src/rl/server.ts"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@napi-rs/canvas": "^0.1.51",
+    "js-yaml": "^4.1.0",
+    "wasmoon": "^1.16.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.20.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}

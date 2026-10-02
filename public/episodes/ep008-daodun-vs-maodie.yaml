@@ -1,0 +1,90 @@
+id: ep008-daodun-vs-maodie
+title: 我的刀盾 VS 耄耋
+subtitle: 满配剑盾，最怕猫急
+seed: 1682
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+timeLimit: 42
+suddenDeathAtkMultiplier: 5
+
+physics:
+  knockback: 0.38
+  restitution: 0.68
+  wallRestitution: 0.72
+  separationTime: 0.42
+  separateAccel: 300
+  initialSpeed: 260
+
+fighters:
+  - id: daodun
+    name: 我的刀盾
+    behavior: chase
+    sprite: sprites/daodun-original.png
+    stateSprites:
+      block: sprites/daodun-block-original.png
+    color: "#5b7cfa"
+    hp: 1650
+    atk: 75
+    atkInterval: 0.92
+    speed: 132
+    range: 218
+    radius: 96
+    combo: [1, 1, 1, 1.8]
+    weapon: { name: 刀盾宝剑, kind: melee, damage: 150, every: 4.8, knockback: 2.1, reachMult: 1.9 }
+    skills:
+      - { name: 举盾反击, every: 5.6, multiplier: 1, shieldPct: 0.08 }
+
+  - id: maodie
+    name: 耄耋
+    behavior: chase
+    sprite: sprites/maodie-original.png
+    stateSprites:
+      berserk: sprites/maodie-berserk-original.png
+    color: "#ef4444"
+    hp: 1280
+    atk: 56
+    atkInterval: 0.76
+    speed: 174
+    range: 208
+    radius: 84
+    combo: [1, 1, 1.55]
+    skills:
+      - { name: 耄耋连环挠, every: 4.4, multiplier: 1.65 }
+
+twists:
+  - trigger: { timeAt: 0.12, fighter: daodun }
+    banner: "我的盾！"
+    caption: "刀在右边，盾在左边——先把数值叠满"
+    effect: { type: shield, hpPct: 0.25 }
+  - trigger: { hpBelowPct: 0.25, fighter: maodie }
+    banner: "耄耋狂化"
+    caption: "等等，它不是老了——它是红温了！"
+    slowmo: 1.15
+    effect: { type: berserk, atkMultiplier: 4.8, intervalMultiplier: 0.46, speedMultiplier: 1.4, healPct: 0.2, shieldPct: 0.1, durationSec: 12 }
+
+captions:
+  - { t: 4.7, text: "一边满配剑盾，一边只是耄耋——这还用打？", dur: 3.1 }
+  - { t: 8.5, text: "刀盾数值全面领先，盾牌还能硬吃伤害", dur: 3.0 }
+  - { t: 12.2, text: "宝剑一出，耄耋的血条开始消失", dur: 2.8 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.95
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.82
+  duckTo: 0.24
+
+audio:
+  volume: 1
+
+publish:
+  title: "【电子斗蛐蛐】我的刀盾 VS 耄耋：装备碾压还能翻车？"
+  shortTitle: "我的刀盾VS狂化耄耋"
+  desc: "满配剑盾高数值开局，耄耋残血突然狂化。盾先碎，还是猫先倒？"
+  tags: [电子斗蛐蛐, 斗蛐蛐, 搞笑, 我的刀盾, 耄耋]
+  tid: 138
+  coverAt: 20

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>电子斗蛐蛐 · 出片机</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: #000000;
+        color: #dbe4f5;
+        font-family: "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      header {
+        display: flex; align-items: center; gap: 16px;
+        padding: 10px 18px;
+        border-bottom: 1px solid #1c1c22;
+      }
+      header h1 { font-size: 18px; font-weight: 700; color: #ffd32a; white-space: nowrap; }
+      header a { color: #71d7ff; text-decoration: none; border: 1px solid #24455b; border-radius: 8px; padding: 6px 11px; font-size: 13px; white-space: nowrap; }
+      header a:hover { background: #102330; }
+      select, input[type="number"] {
+        background: #0a0a0d; color: #dbe4f5;
+        border: 1px solid #232329; border-radius: 8px;
+        padding: 6px 10px; font-size: 14px; outline: none;
+      }
+      select { max-width: 340px; }
+      input[type="number"] { width: 110px; }
+      button {
+        background: #141418; color: #dbe4f5;
+        border: 1px solid #232329; border-radius: 8px;
+        padding: 6px 14px; font-size: 14px; cursor: pointer;
+        white-space: nowrap;
+      }
+      button:hover { background: #1d1d23; }
+      button.primary { background: #7a1220; border-color: #a32637; color: #ffe3e6; }
+      button.primary:hover { background: #961728; }
+      button.active { background: #26262e; border-color: #4d5261; }
+      .spacer { flex: 1; }
+      main { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 12px; }
+      #stage {
+        height: 100%; max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 0 60px rgba(255, 255, 255, 0.08);
+        background: #000000;
+      }
+      footer {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 18px; border-top: 1px solid #1c1c22;
+        font-size: 14px; color: #8ea0c0;
+      }
+      .spd { padding: 6px 10px; }
+      #status { color: #ffd32a; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>电子斗蛐蛐 · 出片机</h1>
+      <select id="epSelect"></select>
+      <label>seed <input id="seed" type="number" value="42" /></label>
+      <button id="randSeed">随机</button>
+      <a href="/rl-playground.html">RL 小球实验室 →</a>
+      <a href="/train-demo.html">轨道列车小样 →</a>
+    </header>
+    <main><canvas id="stage" width="1080" height="1920"></canvas></main>
+    <footer>
+      <button id="btnPlay">暂停</button>
+      <button id="btnRestart">重开</button>
+      <span>倍速</span>
+      <button class="spd" data-spd="1">1x</button>
+      <button class="spd active" data-spd="2">2x</button>
+      <button class="spd" data-spd="4">4x</button>
+      <button class="spd" data-spd="8">8x</button>
+      <button id="btnRecord" class="primary">● 录制成片 (webm)</button>
+      <span class="spacer"></span>
+      <span id="status">就绪</span>
+    </footer>
+    <script type="module" src="/src/ui/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+id: ep003-takeout-vs-taxi
+title: 外卖骑手 VS 网约车司机
+subtitle: 平台双雄弹板乱斗
+seed: 20260915
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+# 中央弹板 + 两翼弹板：碰撞更炸裂，走位更混沌
+arena:
+  bumpers:
+    - { x: 540, y: 935, r: 92 }
+    - { x: 250, y: 700, r: 62 }
+    - { x: 830, y: 1170, r: 62 }
+
+fighters:
+  - id: rider
+    name: 外卖骑手
+    hp: 8600
+    atk: 72
+    atkInterval: 0.55
+    speed: 195
+    combo: [1, 1, 1, 1.8]
+    skills:
+      - { name: 准时送达, every: 5, multiplier: 2.4 }
+      - { name: 超时免单, every: 5, multiplier: 1, healPct: 0.12 }
+
+  - id: driver
+    name: 网约车司机
+    hp: 26000
+    atk: 380
+    atkInterval: 0.6
+    speed: 150
+    combo: [1, 1, 2.2]
+    skills:
+      - { name: 早晚高峰, every: 6, multiplier: 3 }
+
+twists:
+  # 骑手残血 → 爆单模式
+  - trigger: { hpBelowPct: 0.25, fighter: rider }
+    banner: "爆单模式"
+    caption: "最后一单超时了，骑手的眼睛红了"
+    slowmo: 1.5
+    effect: { type: berserk, atkMultiplier: 40, intervalMultiplier: 1.25, speedMultiplier: 1.5, healPct: 1, shieldPct: 3 }
+
+  # 骑手被打死 → 差评之怒复活
+  - trigger: { fighterDead: rider }
+    banner: "差评之怒"
+    caption: "骑手倒下了！这个月不能有差评——"
+    slowmo: 1.8
+    effect: { type: revive, hpPct: 1, atkMultiplier: 70, intervalMultiplier: 1.2, speedMultiplier: 1.5, shieldPct: 5 }
+
+  - trigger: { timeAt: 20 }
+    caption: "弹板把两个人的走位全打乱了"
+
+captions:
+  - { t: 4.6,  text: "平台双雄内战：外卖骑手 VS 网约车司机" }
+  - { t: 8,    text: "血量差4.4倍，但骑手攻速快一倍" }
+  - { t: 11.5, text: "注意中间那个弹板，谁撞上谁飞" }
+  - { t: 16,   text: "正常人都觉得骑手要没了" }
+  - { t: 24,   text: "三万八的血，跟纸糊的一样" }
+  - { t: 31,   text: "这就是平台的愤怒" }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.95
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】外卖骑手 VS 网约车司机：平台双雄弹板乱斗
+  shortTitle: 外卖骑手VS网约车司机，平台内战
+  desc: "平台双雄内战，中央弹板把走位全打乱了。骑手血量差4.4倍照样翻盘？最后一单超时之后……"
+  tags: [电子斗蛐蛐, 斗蛐蛐, 搞笑, 解压]
+  tid: 138
+  coverAt: 14

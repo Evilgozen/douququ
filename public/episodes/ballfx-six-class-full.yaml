@@ -1,0 +1,42 @@
+id: ballfx-six-class-full
+title: 六职业粒子特效大战
+subtitle: 固定伤害，特效拉满
+seed: 20260920
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+# 仅作为电子斗蛐蛐 TTS 流水线的旁白时间轴载体；实际画面由 ball-fx-arena 渲染。
+fighters:
+  - id: voice_blue
+    name: 蓝方
+    behavior: chase
+    sprite: sprites/daodun-original.png
+    hp: 1
+    atk: 20
+    atkInterval: 0.1
+    speed: 300
+    radius: 40
+  - id: voice_red
+    name: 红方
+    behavior: chase
+    sprite: sprites/maodie-original.png
+    hp: 1
+    atk: 20
+    atkInterval: 0.1
+    speed: 300
+    radius: 40
+
+captions:
+  - { t: 0.5,  text: "六种职业，固定伤害。今天不拼数值，只看谁的技能特效更炸。", dur: 3.8 }
+  - { t: 4.4,  text: "坦克挥动重剑，剑光落地的瞬间，连地面一起震碎。", dur: 3.6 }
+  - { t: 8.8,  text: "刺客穿过战场，双剑交叉，只留下连续的紫色残影。", dur: 3.6 }
+  - { t: 13.2, text: "射手锁定目标，蓄力完成，一发穿星弹拖着整条彗尾飞出。", dur: 4.0 }
+  - { t: 18.0, text: "狂战士血量越低越危险，双层旋刃和火花同时爆发。", dur: 3.8 }
+  - { t: 22.7, text: "召唤师展开六芒法阵，两只星灵从传送门同时降临。", dur: 3.8 }
+  - { t: 27.4, text: "混沌型撕开空间裂隙，移动和技能，连它自己都无法预测。", dur: 4.0 }
+  - { t: 34.4, text: "最终蓝方只剩一线血量。特效再华丽，胜负依然由固定伤害决定。", dur: 4.4 }
+
+narration:
+  voice: BV002_streaming
+  speed: 0.95
+  vol: 1

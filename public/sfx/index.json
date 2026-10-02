@@ -1,0 +1,16 @@
+{
+  "hit_light": "impactPunch_medium_001.wav",
+  "hit_medium": "impactPunch_medium_003.wav",
+  "hit_heavy": "impactPunch_heavy_002.wav",
+  "hit_crit": "impactPunch_heavy_004.wav",
+  "collide_light": "impactWood_light_000.wav",
+  "collide_heavy": "impactMetal_heavy_002.wav",
+  "wall": "impactMetal_heavy_000.wav",
+  "ko": "impactPlate_heavy_000.wav",
+  "twist": "impactBell_heavy_000.wav",
+  "bell": "impactBell_heavy_002.wav",
+  "bumper": "impactTin_medium_000.wav",
+  "boost": "impactGlass_medium_000.wav",
+  "impact_wood": "impactWood_light_000.wav",
+  "train_pass": "train_pass.wav"
+}

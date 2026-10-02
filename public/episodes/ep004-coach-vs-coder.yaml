@@ -1,0 +1,80 @@
+id: ep004-coach-vs-coder
+title: 健身教练 VS 程序员
+subtitle: 龟兔赛跑2.0·加速带竞速
+seed: 666888
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+timeLimit: 24
+suddenDeathAtkMultiplier: 600
+
+# 四角加速带：路过就获得一股冲劲，谁先贴到谁占便宜
+arena:
+  boostZones:
+    - { x: 130, y: 450, w: 190, h: 170 }
+    - { x: 760, y: 450, w: 190, h: 170 }
+    - { x: 130, y: 1250, w: 190, h: 170 }
+    - { x: 760, y: 1250, w: 190, h: 170 }
+
+fighters:
+  - id: coach
+    name: 健身教练
+    hp: 1600000
+    atk: 780
+    atkInterval: 0.8
+    speed: 150
+    combo: [1, 1, 2]
+    skills:
+      - { name: 卧推, every: 6, multiplier: 2 }
+
+  - id: coder
+    name: 程序员
+    hp: 1600000
+    atk: 760
+    atkInterval: 0.75
+    speed: 180
+    combo: [1, 1, 1, 2.4]
+    skills:
+      - { name: 摸鱼回血, every: 3.5, multiplier: 1, healPct: 0.015 }
+
+twists:
+  # 突然死亡后的抢跑大战
+  - trigger: { timeAt: 24.8, fighter: coach }
+    banner: "蛋白粉爆发"
+    caption: "教练摇了一杯氮泵，练背的都沉默了"
+    slowmo: 1.3
+    effect: { type: berserk, atkMultiplier: 1.5 }
+
+  - trigger: { timeAt: 25.2, fighter: coder }
+    banner: "咖啡因过载"
+    caption: "程序员灌下了今天的第八杯美式！"
+    slowmo: 1.3
+    effect: { type: berserk, atkMultiplier: 4.5, shieldPct: 0.35 }
+
+  - trigger: { timeAt: 27 }
+    caption: "加速带成为决胜关键，谁贴谁赢"
+
+captions:
+  - { t: 4.6,  text: "龟兔赛跑2.0：健身教练 VS 程序员" }
+  - { t: 8,    text: "血量攻击全对等，纯拼走位和临场" }
+  - { t: 12,   text: "四个角的加速带，路过就白拿一股冲劲" }
+  - { t: 17,   text: "24秒后突然死亡，先倒下的输" }
+  - { t: 21,   text: "互相对刮，都在等突然死亡" }
+  - { t: 27.5, text: "咖啡因过载！程序员笑到了最后" }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.95
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】健身教练 VS 程序员：龟兔赛跑2.0加速带竞速
+  shortTitle: 健身教练VS程序员，龟兔赛跑2.0
+  desc: "数值全对等的镜像局，四个角的加速带成为决胜关键。24秒后突然死亡，咖啡因过载的程序员笑到了最后？"
+  tags: [电子斗蛐蛐, 斗蛐蛐, 搞笑]
+  tid: 138
+  coverAt: 32

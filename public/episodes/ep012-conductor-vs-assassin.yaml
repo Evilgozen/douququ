@@ -1,0 +1,61 @@
+id: ep012-conductor-vs-assassin
+title: 列车长 VS 刺客
+subtitle: 走过的路会来一辆车；蓄力一秒必突刺
+seed: 12012
+script: default
+combat: { mode: readable, movement: bounce }
+
+# 固定初速度 + 碰撞反弹；同样初始状态逐帧重放一致。
+# 轨道由列车长的实际走位留下。车尾离场后旧轨淡出2秒，期间停止铺轨。
+# 相对上一版的五节车厢，车身与行驶速度均翻倍。
+# 刺客每次蓄力1秒后突刺，命中伤害固定165；列车每次撞击固定110。
+fighters:
+  - id: conductor
+    name: 列车长
+    sprite: sprites/conductor-q.png
+    color: "#e2a451"
+    hp: 740
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 540
+    radius: 66
+    trainTrail: { every: 7, duration: 3, damage: 110, cars: 10, referenceCars: 5, carGap: 52, speedMultiplier: 2, fadeSeconds: 2 }
+
+  - id: assassin
+    name: 刺客
+    sprite: sprites/assassin-q.png
+    color: "#9b74f2"
+    hp: 660
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 270
+    radius: 65
+    dashStrike: { every: 5.5, charge: 1, duration: 0.35, damage: 165 }
+
+captions:
+  - { t: 0.4, text: 列车长铺轨，刺客蓄力突刺, dur: 5.5 }
+  - { t: 11.5, text: 十节列车来了，撞上就弹开, dur: 5.5 }
+  - { t: 22.0, text: 车身翻倍，速度也翻倍, dur: 5.0 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.5
+
+audio:
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.48
+  duckTo: 0.18
+
+publish:
+  title: 【电子斗蛐蛐】列车长大战刺客：跑过的路会开来一辆车！
+  shortTitle: 列车长大战刺客
+  desc: "列车长加速铺轨，十节列车沿冻结轨道以双倍速度驶过，撞击固定110并弹开刺客；撞墙反弹后还可能被列车再次命中。车尾离场后旧轨淡出2秒，才重新铺轨。刺客蓄力1秒后突刺固定165。全程固定规则与可复现轨迹。"
+  tags: [电子斗蛐蛐, 列车长, 刺客, 小球对战, 原创角色]
+  tid: 138
+  coverAt: 23.5

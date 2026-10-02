@@ -1,0 +1,134 @@
+{
+  "tony": {
+    "name": "托尼老师",
+    "wins": 1,
+    "losses": 0,
+    "h2h": {
+      "boxer": {
+        "w": 1,
+        "l": 0
+      }
+    }
+  },
+  "boxer": {
+    "name": "拳王",
+    "wins": 0,
+    "losses": 1,
+    "h2h": {
+      "tony": {
+        "w": 0,
+        "l": 1
+      }
+    }
+  },
+  "guard": {
+    "name": "保安大爷",
+    "wins": 1,
+    "losses": 1,
+    "h2h": {
+      "intern": {
+        "w": 1,
+        "l": 1
+      }
+    }
+  },
+  "intern": {
+    "name": "实习生",
+    "wins": 1,
+    "losses": 1,
+    "h2h": {
+      "guard": {
+        "w": 1,
+        "l": 1
+      }
+    }
+  },
+  "rider": {
+    "name": "外卖骑手",
+    "wins": 1,
+    "losses": 0,
+    "h2h": {
+      "driver": {
+        "w": 1,
+        "l": 0
+      }
+    }
+  },
+  "driver": {
+    "name": "网约车司机",
+    "wins": 0,
+    "losses": 1,
+    "h2h": {
+      "rider": {
+        "w": 0,
+        "l": 1
+      }
+    }
+  },
+  "coach": {
+    "name": "健身教练",
+    "wins": 0,
+    "losses": 1,
+    "h2h": {
+      "coder": {
+        "w": 0,
+        "l": 1
+      }
+    }
+  },
+  "coder": {
+    "name": "程序员",
+    "wins": 1,
+    "losses": 0,
+    "h2h": {
+      "coach": {
+        "w": 1,
+        "l": 0
+      }
+    }
+  },
+  "factorial": {
+    "name": "阶乘",
+    "wins": 1,
+    "losses": 0,
+    "h2h": {
+      "exponential": {
+        "w": 1,
+        "l": 0
+      }
+    }
+  },
+  "exponential": {
+    "name": "指数",
+    "wins": 0,
+    "losses": 1,
+    "h2h": {
+      "factorial": {
+        "w": 0,
+        "l": 1
+      }
+    }
+  },
+  "catalan": {
+    "name": "卡特兰",
+    "wins": 2,
+    "losses": 0,
+    "h2h": {
+      "fibonacci": {
+        "w": 2,
+        "l": 0
+      }
+    }
+  },
+  "fibonacci": {
+    "name": "斐波那契",
+    "wins": 0,
+    "losses": 2,
+    "h2h": {
+      "catalan": {
+        "w": 0,
+        "l": 2
+      }
+    }
+  }
+}

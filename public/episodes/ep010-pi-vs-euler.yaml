@@ -1,0 +1,74 @@
+id: ep010-pi-vs-euler
+title: 圆周率 VS 欧拉公式
+subtitle: 每第5击重击，残血开盾反打
+seed: 3141
+script: default
+combat: { mode: readable }
+
+# 简明对战规则：固定站位、固定出手，不闪避，不随机伤害。
+# 普攻 = max(0, round(攻击力 × 明示倍率) − 对方防御力)。
+# 欧拉每第5次普攻必为2倍重击；π生命低于30%时只触发一次护盾和攻速翻倍。
+fighters:
+  - id: pi
+    name: 圆周率
+    sprite: sprites/pi.png
+    stateSprites: { berserk: sprites/pi-berserk.png }
+    hp: 600
+    radius: 125
+    atk: 70
+    defense: 20
+    atkInterval: 1.6
+    combo: [1]
+
+  - id: euler
+    name: 欧拉公式
+    sprite: sprites/euler.png
+    hp: 680
+    radius: 125
+    atk: 90
+    defense: 10
+    atkInterval: 2.0
+    combo: [1, 1, 1, 1, 2]
+
+twists:
+  - trigger: { hpBelowPct: 0.3, fighter: pi }
+    effect:
+      type: berserk
+      intervalMultiplier: 2
+      shieldPct: 0.26666666666666666  # 160点护盾，画面显示实际护盾值
+      durationSec: 8
+    banner: 数位加速
+    caption: π 残血开盾160，8秒内每0.8秒出手
+    slowmo: 0.6
+
+timeLimit: 28
+
+captions:
+  - { t: 0.5, text: 规则就两条：固定出手，攻击力减对方防御, dur: 3 }
+  - { t: 4.6, text: π 每1.6秒打一拳：70减10，伤害60, dur: 3.2 }
+  - { t: 7.4, text: 欧拉每2秒打一拳：90减20，伤害70, dur: 2.8 }
+  - { t: 10.3, text: 注意欧拉的攻击计数：第5拳必定重击, dur: 3 }
+  - { t: 13.6, text: 第5拳是180减20，固定伤害160, dur: 2.6 }
+  - { t: 15.0, text: π 低于30%血量：开盾160，攻速翻倍8秒, dur: 3 }
+  - { t: 17.5, text: 最后一段就看护盾能挡几拳, dur: 2.5 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.5
+
+audio:
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】圆周率大战欧拉公式：第5拳能否破盾？
+  shortTitle: 圆周率大战欧拉公式
+  desc: "固定规则对战：普通攻击=攻击力−防御力；欧拉每第5击重击，π低于30%血量开盾并加速8秒。攻击计数、出手进度、护盾和增益都在画面显示。"
+  tags: [电子斗蛐蛐, 数学, 圆周率, 欧拉公式, 搞笑]
+  tid: 138
+  coverAt: 20

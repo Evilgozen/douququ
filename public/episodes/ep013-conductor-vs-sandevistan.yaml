@@ -1,0 +1,58 @@
+id: ep013-conductor-vs-sandevistan
+title: 列车长 VS 斯安威斯坦
+subtitle: 停时穿透，残影重叠才伤害
+seed: 13013
+script: default
+combat: { mode: readable, movement: bounce }
+
+# 无随机伤害。停时本体无视车厢及角色碰撞；残影不追击，仅在消失瞬间重叠才扣血。
+fighters:
+  - id: conductor
+    name: 列车长
+    sprite: sprites/conductor-q.png
+    color: "#e2a451"
+    hp: 760
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 540
+    radius: 66
+    trainTrail: { every: 7, duration: 3, damage: 110, cars: 10, referenceCars: 5, carGap: 52, speedMultiplier: 2, fadeSeconds: 2 }
+
+  - id: sandevistan
+    name: 斯安威斯坦
+    sprite: sprites/sandevistan-speedster-blue-q.png
+    color: "#22d3ee"
+    hp: 300
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 300
+    radius: 65
+    speedEcho: { every: 6.5, initialCooldown: 7.2, active: 1.55, speedMultiplier: 3.3, echoEvery: 0.17, releaseEvery: 0.18, hitRadius: 82, damage: 110, maxEchoes: 8 }
+
+captions:
+  - { t: 0.4, text: 停时穿过列车，留下八道残影, dur: 5.2 }
+  - { t: 11.8, text: 时间恢复，踩中残影才会受伤, dur: 5.2 }
+  - { t: 23.0, text: 残影落空，列车也能反击, dur: 5.2 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.55
+
+audio:
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.48
+  duckTo: 0.18
+
+publish:
+  title: 【电子斗蛐蛐】列车长大战斯安威斯坦：停时穿透，残影重叠才伤害！
+  shortTitle: 列车长大战斯安威斯坦
+  desc: "时停时列车和列车长定格，蓝白制服速度者无视车厢和角色碰撞，高速绕行留下八道编号残影。时间恢复后残影依次消失，只有列车长当时与残影范围重叠才受到固定110伤害；落空则不扣血。时停结束后列车撞击固定110。"
+  tags: [电子斗蛐蛐, 列车长, 斯安威斯坦, 赛博朋克, 小球对战]
+  tid: 138
+  coverAt: 12.8

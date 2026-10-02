@@ -1,0 +1,76 @@
+id: ep001-tony-vs-boxer
+title: 托尼老师 VS 拳王
+subtitle: 血量差216倍的绝望局
+seed: 20260912
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+fighters:
+  - id: tony
+    name: 托尼老师
+    hp: 250
+    atk: 18
+    atkInterval: 0.5
+    speed: 165
+    combo: [1, 1, 1.6]
+    skills:
+      - { name: 剪刀手, every: 4.5, multiplier: 2.2 }
+      - { name: 推子回血, every: 3.5, multiplier: 1, healPct: 0.5 }
+
+  - id: boxer
+    name: 拳王
+    hp: 54200
+    atk: 48
+    atkInterval: 1.15
+    speed: 105
+    combo: [1, 1, 2]
+    skills:
+      - { name: 重拳, every: 7, multiplier: 3 }
+
+twists:
+  # 路径A：残血觉醒（护体真气+攻击暴涨）
+  - trigger: { hpBelowPct: 0.18, fighter: tony }
+    banner: "剪刀觉醒"
+    caption: "注意看，托尼的推子开始发烫了"
+    slowmo: 1.5
+    effect: { type: berserk, atkMultiplier: 150, intervalMultiplier: 1.2, speedMultiplier: 1.5, healPct: 1, shieldPct: 3 }
+
+  # 路径B：万一被直接打死，原地觉醒复活（二次反转保险丝，输出拉满确保翻盘）
+  - trigger: { fighterDead: tony }
+    banner: "理发师的执念"
+    caption: "托尼倒下了！等等，他站起来了——"
+    slowmo: 1.8
+    effect: { type: revive, hpPct: 1, atkMultiplier: 180, intervalMultiplier: 1.2, speedMultiplier: 1.5, shieldPct: 5 }
+
+  # 纯解说反转（无效果）
+  - trigger: { timeAt: 22 }
+    caption: "5.4万的血条，正在肉眼可见地消失"
+
+captions:
+  - { t: 4.6,  text: "今天斗的是托尼老师和拳王" }
+  - { t: 8,    text: "血条 250 VS 54200，差了216倍" }
+  - { t: 9.5,  text: "正常人都觉得托尼没了" }
+  - { t: 14,   text: "但拳王突然发现，有点不对劲" }
+  - { t: 19,   text: "护盾根本打不穿，拳王开始冒汗" }
+  - { t: 26,   text: "五万四的血，就这么被推没了" }
+  - { t: 29.8, text: "等一下，托尼的血条——" }
+  - { t: 34.5, text: "这就是来自理发店的愤怒" }
+
+# TTS：speed 0.95 放慢语速；开通大模型语音合成后把 voice 换成大模型音色（如 zh_male_beijingxiaoye_4_v2_mars_bigtts）
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.95
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.9
+  duckTo: 0.3
+
+publish:
+  title: 【电子斗蛐蛐】托尼老师 VS 拳王：血量差216倍的绝望局
+  shortTitle: 托尼老师VS拳王，血量差216倍
+  desc: "血条250 VS 54200，所有人都觉得结束了……注意看，托尼的推子开始发烫了。\nBGM: Pixel Peeker Polka - Kevin MacLeod (incompetech.com), CC BY 4.0"
+  tags: [电子斗蛐蛐, 斗蛐蛐, 搞笑, 解压]
+  tid: 138
+  coverAt: 12

@@ -1,0 +1,59 @@
+id: ep014-assassin-vs-sandevistan
+title: 刺客 VS 斯安威斯坦
+subtitle: 蓄力突刺对决停时残影
+seed: 14015
+endDuration: 2.4
+script: default
+combat: { mode: readable, movement: bounce }
+
+fighters:
+  - id: assassin
+    name: 刺客
+    sprite: sprites/assassin-q.png
+    color: "#9b74f2"
+    hp: 660
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 270
+    radius: 65
+    dashStrike: { every: 5.5, charge: 1, duration: 0.35, damage: 165 }
+
+  - id: sandevistan
+    name: 斯安威斯坦
+    sprite: sprites/sandevistan-speedster-blue-q.png
+    color: "#22d3ee"
+    hp: 660
+    atk: 0
+    defense: 0
+    atkInterval: 999
+    speed: 300
+    radius: 65
+    speedEcho: { every: 5.0, initialCooldown: 7.2, active: 1.55, speedMultiplier: 3.3, echoEvery: 0.17, releaseEvery: 0.18, hitRadius: 82, damage: 110, maxEchoes: 8 }
+
+captions:
+  - { t: 0.4, text: 刺客蓄力突刺，斯安威斯坦停时留残影, dur: 5.3 }
+  - { t: 13.3, text: 时间恢复，残影依次结算, dur: 4.3 }
+  - { t: 19.0, text: 突刺固定165，残影命中固定110, dur: 5.0 }
+  - { t: 27.4, text: 最后一轮停时，刺客能躲开吗, dur: 4.0 }
+
+narration:
+  provider: volc
+  voice: BV002_streaming
+  speed: 0.55
+
+audio:
+  volume: 1
+
+bgm:
+  file: bgm/polka-fast.wav
+  vol: 0.48
+  duckTo: 0.18
+
+publish:
+  title: 【电子斗蛐蛐】刺客大战斯安威斯坦：蓄力突刺能追上停时残影吗？
+  shortTitle: 刺客大战斯安威斯坦
+  desc: "刺客蓄力1秒后突刺，命中固定165；斯安威斯坦定格对手并留下八道残影，时间恢复后残影依次消失，重叠才造成固定110伤害。双方技能与轨迹均可复现。"
+  tags: [电子斗蛐蛐, 刺客, 斯安威斯坦, 停时, 小球对战]
+  tid: 138
+  coverAt: 12.8

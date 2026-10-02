@@ -1,0 +1,56 @@
+id: rl001-intern-kiting
+title: 训练场·实习生风筝特训
+subtitle: RL训练环境（实习生微加强）
+seed: 8888
+combat: { mode: arcade } # 历史剧本；出新片前改成 readable 并重写机制
+script: default
+
+physics:
+  knockback: 0.2
+
+# 伤害全部固定：大爷一棍 90（但很难碰到人），实习生全程放风筝 + 公文包远程消耗
+# behavior 行动策略：chase=追踪 / random=随机游走 / flee=躲避拉距离
+fighters:
+  - id: guard
+    name: 保安大爷
+    behavior: chase
+    sprite: sprites/guard.png
+    hp: 1000
+    atk: 55
+    atkInterval: 0.9
+    speed: 92
+    radius: 96
+    combo: [1, 1, 2]
+    weapon: { name: 警棍, kind: melee, damage: 90, every: 5 }
+
+  - id: intern
+    name: 实习生
+    behavior: random
+    sprite: sprites/intern.png
+    hp: 1200
+    atk: 24
+    atkInterval: 0.6
+    speed: 190
+    radius: 96
+    combo: [1, 1, 1, 2.4]
+    weapon: { name: 公文包, kind: projectile, damage: 70, every: 4.5, speed: 430, arc: true }
+
+twists:
+  # 后期：双方各自激活特色状态（固定倍率）
+  - trigger: { timeAt: 6.5, fighter: intern }
+    banner: "转正加薪"
+    caption: "实习生转正了！出手越来越快"
+    slowmo: 1.2
+    effect: { type: berserk, atkMultiplier: 1.6, intervalMultiplier: 0.75 }
+  - trigger: { timeAt: 7.5, fighter: guard }
+    banner: "电蚊拍"
+    caption: "大爷掏出电蚊拍，伤害翻倍——但前提是碰得到"
+    slowmo: 1.2
+    effect: { type: berserk, atkMultiplier: 2 }
+
+captions:
+  - { t: 4.6, text: "猫鼠追逐战：保安大爷 VS 实习生" }
+  - { t: 7,   text: "大爷一棍 90，实习生一刀 16——但前提是，碰得到" }
+  - { t: 10,  text: "实习生全程放风筝，公文包漫天飞" }
+  - { t: 16,  text: "跑得快的先转正？不，是伤害高的笑到最后" }
+
