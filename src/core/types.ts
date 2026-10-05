@@ -47,6 +47,23 @@ export interface TakeoutItem {
   sprite?: string;
 }
 
+/** MP4 预处理成透明帧序列和 WAV；播放与命中共用模拟时间。 */
+export interface MemeSkillDef {
+  name: string;
+  trigger: 'timer' | 'collision';
+  every: number;
+  initialCooldown: number;
+  duration: number;
+  hitAt: number;
+  damage: number;
+  range: number;
+  framePrefix: string;
+  frameCount: number;
+  fps: number;
+  sound: string;
+  effect?: { kind: 'eggs' | 'clones'; sprite?: string; launchTimes: number[]; speed: number; cloneGrowth?: boolean };
+}
+
 export interface FighterDef {
   id: string;
   name: string;
@@ -108,6 +125,7 @@ export interface FighterDef {
   };
   /** 可选：public/ 下的 PNG 素材路径（如 "sprites/tony.png"），缺省用程序化简笔角色 */
   sprite?: string;
+  memeSkill?: MemeSkillDef;
   /**
    * 状态立绘：单位进入对应状态时替换主素材（路径写法同 sprite）。
    * 提供对应状态素材时，该状态的程序化演出（单车/摔倒旋转）自动关闭
@@ -223,7 +241,7 @@ export interface Episode {
   audio?: { volume?: number };
   /** 解说配音。跑 `npm run tts -- <yaml>` 生成后渲染自动混入并对齐字幕 */
   narration?: {
-    /** 'minimax'（默认）或 'volc'（豆包语音，读 .aksk 火山段落） */
+    /** 'minimax'（默认）、'volc'（经典）或 'volc-v3'（豆包语音合成 2.0） */
     provider?: string;
     voice?: string;
     model?: string;

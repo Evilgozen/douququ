@@ -15,6 +15,8 @@ import { Battle } from '../core/sim';
 import { parseEpisodeText } from '../core/loader';
 import { synthesize, voiceKey, DEFAULT_VOICE, type TtsVoiceCfg } from '../tts/minimax';
 import { synthesizeVolc } from '../tts/volc';
+import { synthesizeVolcV3, VOLC_V3_RESOURCE, VOLC_V3_VOICE, type WordTimestamp } from '../tts/volcV3';
+import { parseWav } from '../audio/mixer';
 import type { Episode } from '../core/types';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -31,6 +33,7 @@ interface NarrationLine {
   gold: boolean;
   /** 该行音量（金色行 > 1，混音时应用） */
   vol: number;
+  words?: WordTimestamp[];
 }
 
 interface NarrationManifest {
@@ -44,11 +47,13 @@ function voiceCfgOf(ep: Episode, provider: string): TtsVoiceCfg {
   return {
     ...DEFAULT_VOICE,
     ...n,
-    model: provider === 'volc' ? 'volc-tts' : (n.model ?? DEFAULT_VOICE.model),
-    voice: n.voice ?? (provider === 'volc' ? 'BV002_streaming' : DEFAULT_VOICE.voice),  };
+    model: provider === 'volc-v3' ? VOLC_V3_RESOURCE : provider === 'volc' ? 'volc-tts' : (n.model ?? DEFAULT_VOICE.model),
+    voice: n.voice ?? (provider === 'volc-v3' ? VOLC_V3_VOICE : provider === 'volc' ? 'BV002_streaming' : DEFAULT_VOICE.voice),
+  };
 }
 
-async function synthesizeLine(provider: string, text: string, cfg: TtsVoiceCfg): Promise<{ wav: Buffer; durMs: number }> {
+async function synthesizeLine(provider: string, text: string, cfg: TtsVoiceCfg): Promise<{ wav: Buffer; durMs: number; words?: WordTimestamp[] }> {
+  if (provider === 'volc-v3') return synthesizeVolcV3(text, cfg);
   if (provider === 'volc') {
     const r = await synthesizeVolc(text, {
       voice: cfg.voice,
@@ -56,8 +61,8 @@ async function synthesizeLine(provider: string, text: string, cfg: TtsVoiceCfg):
       vol: cfg.vol,
       cluster: 'volcano_tts',
     });
-    // 火山返回的 wav 是 44.1kHz 16bit mono，混音器直接吃；时长从文件长度推
-    const durMs = Math.round((r.wav.length - 44) / 2 / 44.1);
+    const audio = parseWav(r.wav.buffer.slice(r.wav.byteOffset, r.wav.byteOffset + r.wav.byteLength) as ArrayBuffer);
+    const durMs = Math.round(audio.samples.length / audio.sampleRate * 1000);
     return { wav: r.wav, durMs };
   }
   return synthesize(text, cfg);
@@ -98,13 +103,14 @@ async function main(): Promise<void> {
   let provider = explicitProvider ?? 'minimax';
   const file = argv.find((a) => !a.startsWith('--'));
   if (!file) {
-    console.error('用法：npm run tts -- <episode.yaml> [--force] [--volc | --provider=minimax|volc]');
+    console.error('用法：npm run tts -- <episode.yaml> [--force] [--volc | --provider=minimax|volc|volc-v3]');
     process.exit(1);
   }
   const ep = parseEpisodeText(fs.readFileSync(path.resolve(file), 'utf8'), path.basename(file).replace(/\.ya?ml$/i, ''));
-  if (!explicitProvider && ep.narration?.provider && ['volc', 'minimax'].includes(ep.narration.provider)) {
+  if (!explicitProvider && ep.narration?.provider) {
     provider = ep.narration.provider; // 剧本指定优先于默认
   }
+  if (!['volc', 'minimax', 'volc-v3'].includes(provider)) throw new Error(`不支持的 TTS provider：${provider}`);
   const cfg = voiceCfgOf(ep, provider);
   const outDir = path.join(PUBLIC_DIR, 'tts', ep.id);
   fs.mkdirSync(outDir, { recursive: true });
@@ -121,20 +127,26 @@ async function main(): Promise<void> {
     const fileName = `${hash}.wav`;
     const filePath = path.join(outDir, fileName);
     let dur = 0;
+    let words: WordTimestamp[] | undefined;
     if (!force && fs.existsSync(filePath)) {
+      // 旧缓存的 durMs 可能按错误的固定采样率计算；从 WAV 本身重新读取，不重复调用 TTS。
+      const wav = fs.readFileSync(filePath);
+      const audio = parseWav(wav.buffer.slice(wav.byteOffset, wav.byteOffset + wav.byteLength) as ArrayBuffer);
+      dur = audio.samples.length / audio.sampleRate;
       const metaPath = filePath.replace(/\.wav$/, '.json');
-      dur = JSON.parse(fs.readFileSync(metaPath, 'utf8')).durMs / 1000;
+      if (fs.existsSync(metaPath)) words = JSON.parse(fs.readFileSync(metaPath, 'utf8')).words;
       cacheHit++;
     } else {
       process.stdout.write(`合成${line.gold ? '（亢奋）' : ''}：「${line.text}」… `);
       const r = await synthesizeLine(provider, line.text, lineCfg);
       fs.writeFileSync(filePath, r.wav);
-      fs.writeFileSync(filePath.replace(/\.wav$/, '.json'), JSON.stringify({ durMs: r.durMs, text: line.text }));
+      fs.writeFileSync(filePath.replace(/\.wav$/, '.json'), JSON.stringify({ durMs: r.durMs, text: line.text, words: r.words }));
       dur = r.durMs / 1000;
+      words = r.words;
       spent += line.text.length;
       console.log(`${dur.toFixed(1)}s`);
     }
-    manifest.lines.push({ hash, file: fileName, t: line.t, dur, text: line.text, gold: line.gold, vol: lineCfg.vol });
+    manifest.lines.push({ hash, file: fileName, t: line.t, dur, text: line.text, gold: line.gold, vol: lineCfg.vol, ...(words ? { words } : {}) });
   }
   fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
   console.log(`\n完成：${manifest.lines.length} 行（缓存命中 ${cacheHit}，本次合成计费约 ${spent} 字符）`);

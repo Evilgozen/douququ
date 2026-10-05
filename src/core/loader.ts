@@ -50,6 +50,31 @@ function normFighter(raw: unknown, i: number): FighterDef {
     name: reqStr(o.name, `${who}.name`),
     behavior,
     sprite: typeof o.sprite === 'string' ? o.sprite : undefined,
+    memeSkill: (() => {
+      const m = o.memeSkill as Record<string, unknown> | undefined;
+      if (!m) return undefined;
+      const trigger = reqStr(m.trigger, `${who}.memeSkill.trigger`);
+      if (trigger !== 'timer' && trigger !== 'collision') throw new Error(`${who}.memeSkill.trigger 必须是 timer/collision`);
+      const duration = reqPos(m.duration, `${who}.memeSkill.duration`);
+      const hitAt = optNum(m.hitAt, 0);
+      const initialCooldown = optNum(m.initialCooldown, 0);
+      const frameCount = reqPos(m.frameCount, `${who}.memeSkill.frameCount`);
+      const fps = reqPos(m.fps, `${who}.memeSkill.fps`);
+      if (hitAt < 0 || hitAt >= duration || initialCooldown < 0 || !Number.isInteger(frameCount) || frameCount / fps + 0.001 < duration) throw new Error(`${who}.memeSkill：命中时刻须在片段内，冷却非负，帧数为整数且覆盖时长`);
+      const effect = (() => {
+        const e = m.effect as Record<string, unknown> | undefined;
+        if (!e) return undefined;
+        const kind = reqStr(e.kind, `${who}.memeSkill.effect.kind`);
+        if (kind !== 'eggs' && kind !== 'clones') throw new Error('meme effect 必须是 eggs/clones');
+        const launchTimes = Array.isArray(e.launchTimes) ? e.launchTimes.map(Number) : [];
+        if (launchTimes.length !== 2 || launchTimes.some((t) => !Number.isFinite(t) || t < 0 || t >= duration) || launchTimes[0] > launchTimes[1] || (kind === 'clones' && launchTimes[0] === launchTimes[1])) throw new Error('发射时间须在动作内；双蛋可同时发射，分身须依次发射');
+        const sprite = typeof e.sprite === 'string' ? e.sprite : undefined;
+        if (kind === 'eggs' && !sprite) throw new Error('eggs 需要弹丸 sprite');
+        if (e.cloneGrowth !== undefined && (typeof e.cloneGrowth !== 'boolean' || kind !== 'clones')) throw new Error('cloneGrowth 仅可用于分身，且必须为布尔值');
+        return { kind: kind as 'eggs' | 'clones', sprite, launchTimes, speed: reqPos(e.speed, `${who}.memeSkill.effect.speed`), cloneGrowth: e.cloneGrowth === true };
+      })();
+      return { name: reqStr(m.name, `${who}.memeSkill.name`), trigger, every: reqPos(m.every, `${who}.memeSkill.every`), initialCooldown, duration, hitAt, damage: reqPos(m.damage, `${who}.memeSkill.damage`), range: reqPos(m.range, `${who}.memeSkill.range`), framePrefix: reqStr(m.framePrefix, `${who}.memeSkill.framePrefix`), frameCount, fps, sound: reqStr(m.sound, `${who}.memeSkill.sound`), effect };
+    })(),
     stateSprites: (() => {
       const s = o.stateSprites as Record<string, unknown> | undefined;
       if (!s) return undefined;
@@ -228,14 +253,16 @@ export function parseEpisodeText(text: string, idFallback = 'episode'): Episode 
       }
       if (!f.combo || f.combo.length === 0) f.combo = [1];
       if (f.combo.some((v) => !Number.isFinite(v) || v < 0)) throw new Error(`${f.name}.combo 必须是非负固定倍率`);
-      if (movement === 'stationary' && (f.trainTrail || f.dashStrike || f.speedEcho)) throw new Error(`${f.name}：trainTrail/dashStrike/speedEcho 需要 combat.movement: bounce`);
+      if (movement === 'stationary' && (f.trainTrail || f.dashStrike || f.speedEcho || f.memeSkill)) throw new Error(`${f.name}：动态技能需要 combat.movement: bounce`);
     }
   }
   if (movement === 'bounce' && combatMode !== 'readable') throw new Error('bounce 移动仅支持 readable 模式');
+  if (fighters.some((f) => f.memeSkill) && (combatMode !== 'readable' || movement !== 'bounce' || !fighters.every((f) => f.memeSkill && !f.trainTrail && !f.dashStrike && !f.speedEcho))) throw new Error('memeSkill 需要两名 meme 角色的 readable/bounce 对战，不与列车、突刺、残影混用');
   if (movement === 'bounce') {
     const trainDuel = fighters.filter((f) => f.trainTrail).length === 1 && fighters.filter((f) => Boolean(f.dashStrike || f.speedEcho)).length === 1;
     const skillDuel = fighters.filter((f) => f.dashStrike).length === 1 && fighters.filter((f) => f.speedEcho).length === 1 && fighters.every((f) => !f.trainTrail);
-    if ((!trainDuel && !skillDuel) || fighters.some((f) => f.dashStrike && f.speedEcho)) throw new Error('bounce 剧本需要列车长对突刺/残影角色，或突刺角色对残影角色');
+    const memeDuel = fighters.every((f) => f.memeSkill && !f.trainTrail && !f.dashStrike && !f.speedEcho && f.atk === 0 && f.defense === 0 && Number.isInteger(f.memeSkill.damage));
+    if ((!trainDuel && !skillDuel && !memeDuel) || fighters.some((f) => f.dashStrike && f.speedEcho)) throw new Error('bounce 剧本需要列车/突刺/残影对战，或两名关闭普攻与防御的 meme 技能角色');
   }
   const seen = new Set<string>();
   for (const f of fighters) {

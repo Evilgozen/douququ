@@ -38,9 +38,9 @@ captions:
   - { t: 27.4, text: 最后一轮停时，刺客能躲开吗, dur: 4.0 }
 
 narration:
-  provider: volc
-  voice: BV002_streaming
-  speed: 0.55
+  provider: volc-v3
+  voice: zh_female_vv_uranus_bigtts
+  speed: 1.0
 
 audio:
   volume: 1

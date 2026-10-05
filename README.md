@@ -189,7 +189,17 @@ npm run publish:bili -- exports/ep001-xxx.mp4 \
 ```bash
 npm run tts -- public/episodes/ep001-tony-vs-boxer.yaml          # MiniMax（.aksk 第 1 行 = API Key）
 npm run tts -- public/episodes/ep001-tony-vs-boxer.yaml --volc   # 火山豆包（.aksk「火山」段 = 访问令牌行 + 数字 AppID 行）
+npm run tts -- public/episodes/ep014-assassin-vs-sandevistan.yaml # 本期已选豆包语音合成 2.0
+npm run tts:probe                                             # 一句短文验证 2.0 权限并保存试听
 ```
+
+- 豆包语音合成 2.0：`narration.provider: volc-v3`，资源 `seed-tts-2.0`，v3 SSE 接口。默认使用官方示例音色 `zh_female_vv_uranus_bigtts`（音质尚待试听）。
+- 获取密钥：[豆包语音 API Key 管理](https://console.volcengine.com/speech/new/setting/apikeys?projectName=default)，确认账号开通语音合成 2.0。在 `.aksk` **新增**一行 `VOLC_TTS_API_KEY=实际密钥`，保留 MiniMax/经典火山段；也支持同名环境变量或 `.volc-tts-key` 单行文件。上述密钥文件均被 git 忽略。
+- 2026-10-06 已通过账号实际调用验证豆包 2.0，生成短句及 EP15 两行配音。
+
+猫 meme 示例：`public/episodes/ep015-cat-meme.yaml`。角色平时显示静态图，橘猫按冷却自动释放成长分身舞，白猫计时释放双蛋弹丸。`npm run meme:prepare` 将橘猫前 5 秒、白猫前 6 秒转换为透明 PNG 帧序列和同步原声 WAV；白猫音画均以 1.2 倍速预处理，输出 5 秒，语音保持音高；浏览器与 CLI 共用模拟时间选择帧，结束后恢复静态图。橘猫首轮 1 个分身，每轮增加 1 个，在第 1.2 至 2.4 秒间依次冲撞，每次命中 50；白猫在第 1.4 秒同时发射双蛋弹，全程并排间距 152 px，每枚命中 60。双方动作结束后冷却 2.5 秒，白猫首次战斗 1 秒后启动；当前整期约 35.3 秒。`memeSkill.effect` 可配置 `clones` / `eggs`、发射时间和速度，双蛋允许同一时刻发射，分身须依次发射；cloneGrowth 开启逐轮增加数量。白猫开头的透明空帧用首个有效姿势补齐，保留原音画时间轴。伤害按每个实体命中结算，发射后不追踪。击倒后不再扣血，已开始的选定片段播完再结算。运行 `npm run check:meme-battle` 检查整期小于 45 秒、并排同发、音画同步、确定性和落空。
+- v3 使用 PCM 拼接后包装为 24kHz 16-bit mono WAV，字级时间戳保存到配音 sidecar 和 manifest；当前字幕渲染仍是整句，保存时间戳不代表已经实现逐字字幕。
+- 运行 `npm run check:tts-v3` 验证协议处理（mock，无计费），运行 `npm run tts:probe` 才验证真实账户权限（短句会按实际用量计费）。
 
 - 流程：跑一遍确定性对局收集全部解说词（含反转触发的动态字幕）→ 逐行调 TTS（按文案哈希缓存，重渲染不重复计费）→ 写 manifest → 渲染时按「模拟时间→视频时间」重映射混入音轨，**字幕停留时长自动对齐语音**
 - 剧本里配 `narration:` 可换音色/语速/情感/音量；火山默认音色 `BV002_streaming`（通用男声），换 `BV001_streaming` 为女声，更多音色见控制台「音色管理」

@@ -238,6 +238,11 @@ function loadNarrationManifest(ep: Episode): NarrationManifest | null {
     console.warn(`[tts] ${ep.id} 的配音清单与当前剧本不符，跳过旧配音；更新配音后再渲染即可。`);
     return null;
   }
+  // 已有 manifest 的时长也可能来自旧版固定采样率估算，以实际 WAV 为准。
+  for (const line of m.lines) {
+    const audio = parseWav(readFileBuffer(path.join(PUBLIC_DIR, 'tts', ep.id, line.file)));
+    line.dur = audio.samples.length / audio.sampleRate;
+  }
   return m;
 }
 
@@ -349,6 +354,11 @@ async function renderVideo(ep: Episode, out: string, fps: number, assets: Assets
   // 混音：模拟时间 → 视频时间（慢放期间两者有偏差）→ 音效层 + 配音层合成
   if (!mute && (st.sfx.length > 0 || ttsManifest)) {
     const mapped = mapToVideoTime(st.sfx, timeMap);
+    const memeSounds = new Set(ep.fighters.filter((f) => f.memeSkill).map((f) => f.memeSkill!.sound));
+    if (memeSounds.size && st.phase === 'end') {
+      const endTime = mapToVideoTime([{ name: '', t: st.t - st.endT, vol: 1, rate: 1 }], timeMap)[0].t;
+      for (const event of mapped) if (memeSounds.has(event.name)) event.durationSec = Math.max(0, endTime - event.t);
+    }
     const sfxLayer = mixSfxFloat(mapped, await loadSfxLib(mapped.map((e) => e.name)), frameIdx / fps + 0.2, ep.audio?.volume ?? 1);
     const layers = [sfxLayer];
     // BGM 层：解说时间窗内自动压音量（时间窗按视频时间轴）

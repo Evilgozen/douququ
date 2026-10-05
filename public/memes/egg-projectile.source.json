@@ -1,0 +1,7 @@
+{
+  "generator": "imagegen",
+  "created": "2026-10-06",
+  "asset": "egg-projectile.png",
+  "description": "透明背景、奶油色蛋状卡通弹丸，一张素材用于两个独立实体",
+  "usage": "ep015-cat-meme.yaml / jiujiu / memeSkill.effect.sprite"
+}

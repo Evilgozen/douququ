@@ -1,0 +1,11 @@
+{
+  "source": "阿米嘎蒂朵猫猫.mp4",
+  "start": 0,
+  "duration": 5,
+  "playbackRate": 1,
+  "sourceDuration": 5,
+  "fps": 15,
+  "frameCount": 75,
+  "crop": "crop=360:540:180:240",
+  "leadingHeldFrames": 0
+}

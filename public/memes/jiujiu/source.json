@@ -1,0 +1,11 @@
+{
+  "source": "九九成稀罕物.mp4",
+  "start": 0,
+  "duration": 5,
+  "playbackRate": 1.2,
+  "sourceDuration": 6,
+  "fps": 15,
+  "frameCount": 75,
+  "crop": "crop=576:576:0:254,crop=320:300:120:130",
+  "leadingHeldFrames": 7
+}

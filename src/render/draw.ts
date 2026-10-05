@@ -6,6 +6,7 @@ import { ARENA, BALL_R, END_DUR, H, INTRO_DUR, SIDE_COLORS, W, type BattleState,
 import { drawBeams, drawGases, drawMechanisms, drawParticles, drawProjectiles, drawShocks, drawStar } from './fx';
 import { fmt, fmtMult } from '../core/bignum';
 import { pointOnTrack, type TrackPoint } from '../core/trainDemo';
+import { memeFrameAt } from './memeFrames';
 
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
@@ -275,11 +276,12 @@ function drawUnit(ctx: Ctx, st: BattleState, u: Unit, assets: Assets): void {
   const blockPath = u.blockT > 0 ? u.def.stateSprites?.block : undefined;
   const bikePath = u.bikeT > 0 ? u.def.stateSprites?.bike : undefined;
   const berserkPath = u.props.berserk > 0 ? u.def.stateSprites?.berserk : undefined;
-  const activePath = [stunPath, blockPath, bikePath, berserkPath, u.def.sprite].find((p) => p && assets.has(p)) ?? u.def.sprite;
+  const memePath = st.phase === 'fight' && u.def.memeSkill && u.meme.elapsed !== null ? memeFrameAt(u.def.memeSkill, u.meme.elapsed) : undefined;
+  const activePath = [memePath, stunPath, blockPath, bikePath, berserkPath, u.def.sprite].find((p) => p && assets.has(p)) ?? u.def.sprite;
   const spr = activePath ? assets.get(activePath) : undefined;
   ctx.save();
   ctx.translate(u.x, u.y);
-  if (!u.alive) {
+  if (!u.alive && !memePath) {
     ctx.globalAlpha = 0.3;
     ctx.rotate(Math.PI / 2);
   } else {
@@ -333,6 +335,23 @@ function drawUnit(ctx: Ctx, st: BattleState, u: Unit, assets: Assets): void {
   ctx.restore();
 
   // 结算阶段隐藏头顶信息，避免与结算卡数字矛盾
+  if (st.phase === 'fight' && (u.alive || memePath) && u.def.memeSkill) {
+    const m = u.def.memeSkill;
+    ctx.save();
+    const active = u.meme.elapsed !== null;
+    if (active && !m.effect) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ARENA.left, ARENA.top, ARENA.right - ARENA.left, ARENA.bottom - ARENA.top); ctx.clip();
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = u.color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(u.x, u.y, m.range, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+    ctx.font = font(22); ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff';
+    const label = active ? `${m.name} · ${m.effect ? '技能演出' : u.meme.hit ? '已结算' : '蓄力'}` : u.meme.cooldown > 0 ? `技能 CD ${u.meme.cooldown.toFixed(1)}s` : m.trigger === 'collision' ? '碰撞释放技能' : '技能就绪';
+    ctx.fillText(label, u.x, u.y + u.r + 76);
+    ctx.restore();
+  }
   if (u.alive && st.phase !== 'end') drawOverlays(ctx, st, u);
 }
 
@@ -662,6 +681,16 @@ function drawHud(ctx: Ctx, st: BattleState): void {
           ctx.font = font(25); ctx.fillStyle = '#facc15';
           ctx.fillText(`列车·墙体连撞 ×${rail.combo.count}`, x, y0 + 162);
         }
+      } else if (u.def.memeSkill) {
+        const m = u.def.memeSkill;
+        const active = u.meme.elapsed !== null && st.phase === 'fight';
+        const label = active ? `动作剩余 ${(m.duration - u.meme.elapsed!).toFixed(1)}s` : u.meme.cooldown > 0 ? `技能 CD ${u.meme.cooldown.toFixed(1)}s` : m.trigger === 'collision' ? '等待碰撞' : '定时释放';
+        ctx.textAlign = side === 0 ? 'left' : 'right'; ctx.font = font(22); ctx.fillStyle = '#e7edf8';
+        ctx.fillText(`${m.effect?.kind === 'eggs' ? '双蛋弹丸' : m.effect?.kind === 'clones' ? m.effect.cloneGrowth ? `分身 ×${active ? u.meme.casts : u.meme.casts + 1}${active ? '' : '（下轮）'}` : '双分身' : m.trigger === 'collision' ? '碰撞技能' : '定时技能'} · ${m.effect ? '每次命中' : '固定伤害'} ${m.damage}`, side === 0 ? x : x + bw, y0 + 78);
+        ctx.fillText(label, side === 0 ? x : x + bw, y0 + 110);
+        const progress = active ? u.meme.elapsed! / m.duration : 1 - u.meme.cooldown / Math.max(m.every, m.initialCooldown);
+        ctx.fillStyle = '#202938'; rr(ctx, x, y0 + 122, bw, 12, 6); ctx.fill();
+        ctx.fillStyle = color; rr(ctx, x, y0 + 122, bw * Math.max(0, Math.min(1, progress)), 12, 6); ctx.fill();
       } else {
       const attackNo = u.fighter.comboIndex + 1;
       const comboLength = u.fighter.combo.length;
@@ -751,10 +780,15 @@ function drawIntro(ctx: Ctx, st: BattleState): void {
   const f1 = st.units.find((u) => u.side === 1);
   ctx.font = font(64);
   if (f0) {
+    let nameSize = 64;
+    while (nameSize > 24 && ctx.measureText(f0.name).width > 360) ctx.font = font(--nameSize);
     ctx.textAlign = 'right';
     strokeFillText(ctx, f0.name, -160 + slide * 560, 940, 12, f0.color);
   }
   if (f1) {
+    let nameSize = 64;
+    ctx.font = font(nameSize);
+    while (nameSize > 24 && ctx.measureText(f1.name).width > 360) ctx.font = font(--nameSize);
     ctx.textAlign = 'left';
     strokeFillText(ctx, f1.name, 1240 - slide * 560, 940, 12, f1.color);
   }

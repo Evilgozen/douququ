@@ -1,8 +1,11 @@
 node_modules/
+.cache/
 exports/
 dist/
 *.log
 .aksk
+.volc-tts-key
+assets/cat-meme/raw/
 cookies.json
 public/tts/
 output/

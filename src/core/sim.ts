@@ -9,6 +9,7 @@ import { fmt } from './bignum';
 import { evalTwists } from './twists';
 import { Fighter, type AttackResult } from './fighter';
 import { pointOnTrack, type TrackPoint } from './trainDemo';
+import { memeProjectilePosition } from './memeMotion';
 import type { Episode, FighterDef, SkillDef } from './types';
 
 export const W = 1080;
@@ -93,6 +94,7 @@ export interface Unit {
   phase0: number;
   /** Lua 状态转移用的自定义属性（如 hyped/rage 计数） */
   props: Record<string, number>;
+  meme: { cooldown: number; elapsed: number | null; hit: boolean; casts: number };
   totalDamage: number;
   biggestHit: number;
   biggestMult: number;
@@ -141,6 +143,7 @@ export interface SfxEvent {
 
 /** 交给 Lua 脚本层的结构化事件 */
 export type GameEvent =
+  | { type: 'meme_skill'; t: number; unit: string; sound: string; name: string }
   | { type: 'collision'; t: number; a: string; b: string; speed: number; x: number; y: number }
   | { type: 'wall'; t: number; unit: string; wall: string; speed: number }
   | { type: 'bumper'; t: number; unit: string; speed: number }
@@ -196,6 +199,7 @@ export interface Projectile {
   color?: string;
   /** 专属素材（火锅/奶茶等），优先于袋子绘制 */
   sprite?: string;
+  meme?: { kind: 'eggs' | 'clones'; delay: number; launched: boolean; radius: number; volleyOffset?: { x: number; y: number } };
   /** 命中减速（冰美式等），单位：秒/倍率 */
   slowSec?: number;
   slowMult?: number;
@@ -348,6 +352,7 @@ export function makeUnit(ep: Episode, def: FighterDef, side: 0 | 1, st: { rng: R
     facing: top ? 1 : -1,
     phase0: st.rng.range(0, Math.PI * 2),
     props: {},
+    meme: { cooldown: def.memeSkill?.initialCooldown ?? 0, elapsed: null, hit: false, casts: 0 },
     totalDamage: 0,
     biggestHit: 0,
     biggestMult: 1,
@@ -376,7 +381,7 @@ function initState(ep: Episode, seed: number): BattleState {
     beams: [],
     projectiles: [],
     gases: [],
-    rail: ep.combat?.movement === 'bounce'
+    rail: ep.combat?.movement === 'bounce' && !ep.fighters.every((f) => f.memeSkill)
       ? { points: [], nextTrainT: ep.fighters.find((f) => f.trainTrail)?.trainTrail?.every ?? 7, pass: null, fading: null, combo: { count: 0, lastTrainHitT: -99, wallPrimedUntil: -99 }, dash: { phase: 'idle', timer: 0, startX: 0, startY: 0, cooldown: 2.2 }, echo: ep.fighters.some((f) => f.speedEcho) ? { activeT: 0, cooldown: ep.fighters.find((f) => f.speedEcho)!.speedEcho!.initialCooldown ?? 2.5, spawnT: 0, releaseT: 0, spawned: 0, released: 0, images: [] } : null }
       : null,
     shocks: [],
@@ -486,7 +491,7 @@ export class Battle {
     st.beams = st.beams.filter((b) => b.life > 0);
     for (const s of st.shocks) s.life -= dt;
     st.shocks = st.shocks.filter((s) => s.life > 0);
-    this.updateProjectiles(dt);
+    this.updateProjectiles(st.ep.fighters.some((f) => f.memeSkill) ? sdt : dt);
     this.updateGases(dt);
     for (const b of st.banners) b.life -= dt;
     st.banners = st.banners.filter((b) => b.life > 0);
@@ -521,7 +526,8 @@ export class Battle {
     st.fightT += sdt;
     if (st.ep.combat?.mode === 'readable') {
       if (st.ep.combat.movement === 'bounce') {
-        if (st.units.some((u) => u.def.trainTrail)) this.stepReadableBounce(sdt);
+        if (st.units.every((u) => u.def.memeSkill)) this.stepMemeDuel(sdt);
+        else if (st.units.some((u) => u.def.trainTrail)) this.stepReadableBounce(sdt);
         else this.stepReadableSkillDuel(sdt);
       }
       else this.stepReadable(sdt);
@@ -539,6 +545,76 @@ export class Battle {
       st.winner = -1;
       st.endT = 0;
       st.events.push({ type: 'phase', t: st.t, name: 'end' });
+    }
+  }
+
+  /** 静态移动、触发后原地播放动作；命中只读取确定性几何与固定时间。 */
+  private stepMemeDuel(dt: number): void {
+    const st = this.st;
+    const [a, b] = st.units;
+    for (const u of [a, b]) {
+      if (!u.alive) continue;
+      u.meme.cooldown = Math.max(0, u.meme.cooldown - dt);
+      if (u.meme.elapsed === null && a.alive && b.alive) {
+        u.x += u.vx * dt; u.y += u.vy * dt;
+        if (u.x < ARENA.left + u.r || u.x > ARENA.right - u.r) u.vx *= -1;
+        if (u.y < ARENA.top + u.r || u.y > ARENA.bottom - u.r) u.vy *= -1;
+        u.x = Math.max(ARENA.left + u.r, Math.min(ARENA.right - u.r, u.x));
+        u.y = Math.max(ARENA.top + u.r, Math.min(ARENA.bottom - u.r, u.y));
+      }
+    }
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const distance = Math.hypot(dx, dy);
+    const contact = a.alive && b.alive && distance <= a.r + b.r;
+    if (contact) {
+      const nx = distance > 0.001 ? dx / distance : 1, ny = distance > 0.001 ? dy / distance : 0;
+      const overlap = (a.r + b.r - distance) / 2;
+      a.x -= nx * overlap; a.y -= ny * overlap;
+      b.x += nx * overlap; b.y += ny * overlap;
+      // 分离后始终恢复各自固定速度，不用演出随机流决定轨迹。
+      a.vx = -nx * a.speed; a.vy = -ny * a.speed;
+      b.vx = nx * b.speed; b.vy = ny * b.speed;
+    }
+    for (const [u, target] of [[a, b], [b, a]]) {
+      const m = u.def.memeSkill!;
+      if (u.alive && target.alive && u.meme.elapsed === null && u.meme.cooldown <= 0 && (m.trigger !== 'collision' || contact)) {
+        u.meme.elapsed = 0; u.meme.hit = false; u.meme.casts++;
+        st.popups.push(mkPopup('skill', u.x, u.y - 150, m.effect?.cloneGrowth ? `${m.name} ×${u.meme.casts}` : m.name, 1, u.color, 34));
+        st.events.push({ type: 'meme_skill', t: st.t, unit: u.def.id, sound: m.sound, name: m.name });
+        if (m.effect) {
+          const d = Math.hypot(target.x - u.x, target.y - u.y) || 1;
+          const nx = (target.x - u.x) / d, ny = (target.y - u.y) / d;
+          const growing = m.effect.cloneGrowth === true;
+          const count = growing ? u.meme.casts : m.effect.launchTimes.length;
+          const launchTimes = growing ? Array.from({ length: count }, (_, i) => m.effect!.launchTimes[0] + (count === 1 ? 0 : i / (count - 1)) * (m.effect!.launchTimes[1] - m.effect!.launchTimes[0])) : m.effect.launchTimes;
+          for (const [index, delay] of launchTimes.entries()) {
+            const side = index === 0 ? -1 : 1;
+            const offset = m.effect.kind === 'clones' ? (growing ? count === 1 ? 150 : Math.abs(index - (count - 1) / 2) * 150 : 150) : 76;
+            const cloneSide = growing && count > 1 ? Math.sign(index - (count - 1) / 2) : side;
+            const centerCloneBack = growing && offset === 0 ? 150 : 0;
+            const pullback = m.effect.kind === 'eggs' ? 75 : 0;
+            const volleyOffset = m.effect.kind === 'eggs' ? { x: -ny * offset * side, y: nx * offset * side } : undefined;
+            // 双蛋先限制共同起点，再加左右偏移，保证靠墙时仍保持并排。
+            const marginX = 45 + (volleyOffset ? Math.abs(volleyOffset.x) : 0);
+            const marginY = 70 + (volleyOffset ? Math.abs(volleyOffset.y) : 0);
+            const sx = volleyOffset ? Math.max(ARENA.left + marginX, Math.min(ARENA.right - marginX, u.x - nx * pullback)) + volleyOffset.x : Math.max(ARENA.left + 45, Math.min(ARENA.right - 45, u.x - nx * centerCloneBack - ny * offset * cloneSide));
+            const sy = volleyOffset ? Math.max(ARENA.top + marginY, Math.min(ARENA.bottom - marginY, u.y - ny * pullback)) + volleyOffset.y : Math.max(ARENA.top + 70, Math.min(ARENA.bottom - 70, u.y - ny * centerCloneBack + nx * offset * cloneSide));
+            st.projectiles.push({ ownerUid: u.uid, side: u.side, weaponName: m.name, damage: m.damage, speed: m.effect.speed, sx, sy, tx: target.x, ty: target.y, t: 0, totalTime: 1, arc: m.effect.kind === 'eggs', life: delay + 5, sprite: m.effect.sprite ?? u.def.sprite, color: u.color, meme: { kind: m.effect.kind, delay, launched: false, radius: m.effect.kind === 'eggs' ? 32 : 55, volleyOffset } });
+          }
+        }
+      }
+      if (u.meme.elapsed === null) continue;
+      u.meme.elapsed += dt;
+      if (!m.effect && u.alive && target.alive && !u.meme.hit && u.meme.elapsed + 1e-9 >= m.hitAt) {
+        u.meme.hit = true;
+        if (Math.hypot(target.x - u.x, target.y - u.y) <= m.range + target.r) {
+          st.beams.push({ x1: u.x, y1: u.y, x2: target.x, y2: target.y, life: 0.3, maxLife: 0.3, color: u.color, width: 8 });
+          this.applyDamage(u, target, a2r({ name: m.name }, m.damage, 1));
+        } else st.popups.push(mkPopup('block', u.x, u.y - 120, '落空', 1, '#aaaaaa', 30));
+      }
+      if (u.meme.elapsed + 1e-9 >= m.duration) {
+        u.meme.elapsed = null; u.meme.cooldown = m.every;
+      }
     }
   }
 
@@ -1411,6 +1487,41 @@ export class Battle {
     const alive: Projectile[] = [];
     for (const pr of st.projectiles) {
       if (pr.life <= 0) continue;
+      if (pr.meme) {
+        pr.meme.delay -= dt;
+        if (pr.meme.delay > 1e-9) { alive.push(pr); continue; }
+        if (!pr.meme.launched) {
+          pr.meme.launched = true;
+          const target = st.units.find((u) => u.side !== pr.side);
+          if (target) { pr.tx = target.x + (pr.meme.volleyOffset?.x ?? 0); pr.ty = target.y + (pr.meme.volleyOffset?.y ?? 0); }
+          pr.totalTime = Math.max(pr.meme.kind === 'eggs' ? 0.9 : 0.65, Math.hypot(pr.tx - pr.sx, pr.ty - pr.sy) / pr.speed);
+          pr.life = pr.totalTime + 0.1;
+        }
+        const previous = memeProjectilePosition(pr);
+        pr.t = Math.min(1, pr.t + dt / pr.totalTime);
+        const point = memeProjectilePosition(pr);
+        const target = st.units.find((u) => {
+          if (!u.alive || u.side === pr.side) return false;
+          const dx = point.x - previous.x, dy = point.y - previous.y;
+          const length2 = dx * dx + dy * dy;
+          const t = length2 > 0 ? Math.max(0, Math.min(1, ((u.x - previous.x) * dx + (u.y - previous.y) * dy) / length2)) : 0;
+          return Math.hypot(u.x - previous.x - dx * t, u.y - previous.y - dy * t) <= u.r + pr.meme!.radius;
+        });
+        if (target || pr.t >= 1) {
+          if (target) {
+            const owner = st.units.find((u) => u.uid === pr.ownerUid)!;
+            if (st.units.every((u) => u.alive)) this.applyDamage(owner, target, a2r({ name: pr.weaponName }, pr.damage, 1));
+          } else st.popups.push(mkPopup('block', point.x, point.y - 50, '落空', 1, '#aaaaaa', 28));
+          // 固定方向的蛋壳碎片 / 分身星光，只是演出，不消耗战斗 RNG。
+          for (let i = 0; i < 12; i++) {
+            const angle = i * Math.PI * 2 / 12;
+            st.particles.push({ x: point.x, y: point.y, vx: Math.cos(angle) * 180, vy: Math.sin(angle) * 180, life: 0.6, maxLife: 0.6, size: pr.meme.kind === 'eggs' ? 9 : 5, color: pr.meme.kind === 'eggs' ? '#ffe1ae' : '#ffb347', kind: 'frag' });
+          }
+          st.shocks.push({ x: point.x, y: point.y, r: 15, maxR: 120, life: 0.4, maxLife: 0.4, color: pr.color ?? '#ffffff' });
+          continue;
+        }
+        alive.push(pr); continue;
+      }
       pr.t += dt / pr.totalTime;
       const x = pr.sx + (pr.tx - pr.sx) * pr.t;
       const y = pr.sy + (pr.ty - pr.sy) * pr.t;
@@ -1702,12 +1813,14 @@ export class Battle {
     const side0 = st.units.some((u) => u.side === 0 && u.alive);
     const side1 = st.units.some((u) => u.side === 1 && u.alive);
     if (side0 && side1) return;
+    // 已开播的猫 meme 原视频与原声完整播完，再进入结算；不再启动新技能。
+    if (st.units.some((u) => u.def.memeSkill && u.meme.elapsed !== null)) return;
     st.phase = 'end';
     st.endT = 0;
     st.winner = side0 ? 0 : side1 ? 1 : -1;
     // 击杀镜头：慢放 + 特写倒地位置（结算阶段先停留再滑回全景）
     const dead = st.units.find((u) => !u.alive);
-    if (dead && st.winner !== -1) {
+    if (dead && st.winner !== -1 && !st.units.some((u) => u.def.memeSkill)) {
       st.endFocusY = Math.min(944, Math.max(926, dead.y));
       st.zoomY = st.endFocusY;
       st.slowmo = 1.1;

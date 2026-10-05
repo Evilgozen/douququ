@@ -12,5 +12,7 @@
   "bumper": "impactTin_medium_000.wav",
   "boost": "impactGlass_medium_000.wav",
   "impact_wood": "impactWood_light_000.wav",
-  "train_pass": "train_pass.wav"
+  "train_pass": "train_pass.wav",
+  "meme_amigatito": "meme-amigatito.wav",
+  "meme_jiujiu": "meme-jiujiu.wav"
 }

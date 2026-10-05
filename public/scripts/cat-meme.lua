@@ -1,0 +1,12 @@
+-- 技能视频原声与演出事件同一时间触发；本期禁用慢放，保持动作与原声一致。
+engine.on("meme_skill", function(e)
+  engine.sfx(e.sound, 0.72, 1)
+end)
+engine.on("attack", function(e)
+  engine.sfx("hit_heavy", 0.6, 1)
+  engine.shake(7)
+  engine.flash()
+end)
+engine.on("death", function(e)
+  engine.sfx("bell", 0.4, 1)
+end)

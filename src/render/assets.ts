@@ -1,11 +1,14 @@
 /** 素材加载：按剧本收集 sprite 路径，浏览器与 Node 双端各自实现。 */
 import type { Episode } from '../core/types';
 import type { Assets } from './draw';
+import { memeFramePath } from './memeFrames';
 
 export function collectSpritePaths(ep: Episode): string[] {
   const paths = new Set<string>();
   for (const f of ep.fighters) {
     if (f.sprite) paths.add(f.sprite);
+    if (f.memeSkill) for (let i = 0; i < f.memeSkill.frameCount; i++) paths.add(memeFramePath(f.memeSkill, i));
+    if (f.memeSkill?.effect?.sprite) paths.add(f.memeSkill.effect.sprite);
     if (f.stateSprites?.bike) paths.add(f.stateSprites.bike);
     if (f.stateSprites?.stun) paths.add(f.stateSprites.stun);
     if (f.stateSprites?.block) paths.add(f.stateSprites.block);

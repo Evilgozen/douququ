@@ -65,7 +65,7 @@ async function loadEpisode(file: string): Promise<void> {
     host = scriptRes.ok
       ? await ScriptHost.create(await scriptRes.text(), bindHooks(() => battle!.st, {
           sfxVol: ep.audio?.volume ?? 1,
-          onLiveSfx: (n, v, r) => browserSfx.play(n, v, r),
+          onLiveSfx: (n, v, r) => { if (!ep?.fighters.some((f) => f.memeSkill?.sound === n)) browserSfx.play(n, v, r * speed); },
         }), wasmUri)
       : null;
   } catch (e) {
@@ -102,6 +102,7 @@ function applySeedInput(parsed: Episode): void {
 
 function restart(): void {
   if (!ep) return;
+  browserSfx.stopClips();
   applySeedInput(ep);
   battle = new Battle(ep);
   battle.onEvent = (ev) => void host?.dispatch(ev);
@@ -133,7 +134,12 @@ function frame(now: number): void {
       browserSfx.playBuffer(line.buf, ep?.narration?.volume ?? 1, 1);
     }
   }
-  if (battle) drawFrame(ctx, battle.st, assets);
+  if (battle) {
+    for (const u of battle.st.units) if (u.def.memeSkill) {
+      browserSfx.syncClip(u.def.id, u.def.memeSkill.sound, battle.st.phase === 'fight' ? u.meme.elapsed : null, 0.72 * (ep?.audio?.volume ?? 1), speed * (battle.st.slowmo > 0 ? 0.22 : 1), playing && !battle.done);
+    }
+    drawFrame(ctx, battle.st, assets);
+  }
   else {
     ctx.fillStyle = '#0b0e1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);

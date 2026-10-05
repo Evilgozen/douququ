@@ -1,0 +1,62 @@
+id: ep015-cat-meme
+title: 阿米嘎蒂朵猫猫 VS 九九成稀罕物
+subtitle: 分身伴舞冲撞 VS 双蛋弹丸
+seed: 15001
+endDuration: 2.4
+combat: { mode: readable, movement: bounce }
+script: cat-meme
+fighters:
+  - id: amigatito
+    name: 阿米嘎蒂朵猫猫
+    color: '#ffb347'
+    sprite: memes/amigatito/idle.png
+    hp: 420
+    atk: 0
+    defense: 0
+    speed: 300
+    radius: 75
+    memeSkill:
+      name: 猫猫分身舞
+      trigger: timer
+      every: 2.5
+      initialCooldown: 1
+      duration: 5
+      hitAt: 0.35
+      damage: 50
+      range: 300
+      framePrefix: memes/amigatito/
+      frameCount: 75
+      fps: 15
+      sound: meme_amigatito
+      effect: { kind: clones, cloneGrowth: true, launchTimes: [1.2, 2.4], speed: 580 }
+  - id: jiujiu
+    name: 九九成稀罕物
+    color: '#7dd3fc'
+    sprite: memes/jiujiu/idle.png
+    hp: 420
+    atk: 0
+    defense: 0
+    speed: 260
+    radius: 75
+    memeSkill:
+      name: 稀罕物双蛋弹
+      trigger: timer
+      every: 2.5
+      initialCooldown: 1
+      duration: 5
+      hitAt: 0.8
+      damage: 60
+      range: 520
+      framePrefix: memes/jiujiu/
+      frameCount: 75
+      fps: 15
+      sound: meme_jiujiu
+      effect: { kind: eggs, sprite: memes/egg-projectile.png, launchTimes: [1.4, 1.4], speed: 640 }
+captions:
+  - { t: 0.5, text: 橘猫分身伴舞，白猫并排发射双蛋, dur: 3.8 }
+  - { t: 22, text: 分身依次冲撞，蛋弹实体命中才扣血, dur: 3.6 }
+narration:
+  provider: volc-v3
+  voice: zh_female_vv_uranus_bigtts
+  speed: 1
+bgm: { vol: 0 }

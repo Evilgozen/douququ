@@ -1,6 +1,8 @@
 /** 特效绘制：粒子、光束、地图机关（弹板/加速带）。纯绘制，状态全部来自模拟层。 */
 import { ARENA, type BattleState, type Particle } from '../core/sim';
 import type { Assets } from './draw';
+import { memeProjectilePosition } from '../core/memeMotion';
+import { memeFrameAt } from './memeFrames';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -171,6 +173,24 @@ export function drawShocks(ctx: Ctx, st: BattleState): void {
 /** 飞行道具绘制：专属素材（火锅/奶茶）> 外卖袋 > 公文包；抛物线高度 + 地面影子 + 名字 */
 export function drawProjectiles(ctx: Ctx, st: BattleState, assets?: Assets): void {
   for (const pr of st.projectiles) {
+    if (pr.meme) {
+      if (pr.meme.kind === 'eggs' && !pr.meme.launched) continue;
+      const point = memeProjectilePosition(pr);
+      const owner = st.units.find((u) => u.uid === pr.ownerUid);
+      const frame = pr.meme.kind === 'clones' && owner?.def.memeSkill && owner.meme.elapsed !== null ? memeFrameAt(owner.def.memeSkill, owner.meme.elapsed) : pr.sprite;
+      const sprite = frame ? assets?.get(frame) : undefined;
+      if (!sprite) continue;
+      ctx.save();
+      ctx.translate(point.x, point.y + (pr.meme.launched ? 0 : Math.sin(st.t * 9) * 8));
+      ctx.globalAlpha = pr.meme.kind === 'clones' ? 0.7 : 1;
+      ctx.shadowBlur = 24; ctx.shadowColor = pr.meme.kind === 'clones' ? '#ffb347' : '#ffd67a';
+      if (pr.meme.kind === 'eggs') ctx.rotate(pr.t * Math.PI * 4);
+      const size = pr.meme.kind === 'eggs' ? 145 : 190;
+      const scale = size / Math.max(sprite.w, sprite.h);
+      ctx.drawImage(sprite.img as CanvasImageSource, -sprite.w * scale / 2, -sprite.h * scale / 2, sprite.w * scale, sprite.h * scale);
+      ctx.restore();
+      continue;
+    }
     const x = pr.sx + (pr.tx - pr.sx) * pr.t;
     const yGround = pr.sy + (pr.ty - pr.sy) * pr.t;
     const dist = Math.hypot(pr.tx - pr.sx, pr.ty - pr.sy) || 1;

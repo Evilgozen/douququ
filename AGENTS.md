@@ -47,3 +47,19 @@
 - 本期残影技能后续冷却 5.0 秒，使第二次停时发生在场地中部附近；突刺命中由演出脚本播放明确的重击音效。
 - 结算画面在 2.4 秒后结束，显示逐渐收起的结束进度线；进入结算时清除未结算残影和瞄准线。本期字幕使用火山 TTS 配音，配音清单位于 `public/tts/ep014-assassin-vs-sandevistan/manifest.json`。
 - 运行 `npm run check:assassin-speedster`、`npm run typecheck`，并用 `node --import tsx src/cli/render.ts public/episodes/ep014-assassin-vs-sandevistan.yaml --dry` 核对战报。
+
+## 5. 音频时间与采样率
+
+- WAV 时长按实际 data 帧数 / sampleRate 计算，不能假定头部固定 44 字节或音频固定 44.1kHz。缓存配音和渲染读取已有清单时也以 WAV 本身为准。
+- 离线配音和音效重采样按输出采样取输入，输入步长为 `sourceSampleRate / outputSampleRate × playbackRate`；两倍速音效时长应减半，配音在不同采样率下应保持时长和音高。
+- 修改混音或配音时长读取后运行 `npm run check:audio` 和 `npm run typecheck`。技能音效只消费演出事件，不能影响战斗 RNG、轨迹、伤害或胜负。
+- 音色升级、浏览器倍速与慢放字幕同步的待办及音效来源见 `docs/audio-research.md`。
+- 第 14 期已配置 `volc-v3` / `seed-tts-2.0`，使用官方示例音色 `zh_female_vv_uranus_bigtts`、基础语速 1.0；真实账号调用仍需密钥与服务权限验证。密钥放 `.aksk` 的 `VOLC_TTS_API_KEY=...` 行或同名环境变量，不输出、不入库。
+- v3 流式 PCM 必须正常结束后才缓存，字级时间戳随同音频保存；运行 `npm run check:tts-v3` 验证协议。首次使用用 `npm run tts:probe` 做短句权限与试听检查。
+
+## 6. 猫 meme 技能演出
+
+- 第 15 期为 `public/episodes/ep015-cat-meme.yaml`，双方 HP 420，普通攻击和防御关闭。橘猫片段 5 秒；白猫源素材前 6 秒以 1.2 倍速生成 5 秒动作与原声，语音使用 atempo 保持音高。橘猫首次战斗 1 秒后自动释放，无需碰撞；分身从 1 个开始，每次释放增加 1 个，各分身在第 1.2 至 2.4 秒之间依次冲向对手，每个实体命中固定 50，重开后成长次数归零。画面显示当前轮或下一轮分身数量。白猫首次战斗 1 秒后触发，第 1.4 秒同时发射并排的两枚蛋状弹丸，每枚命中固定 60；全程保持 152 px 间距，使用相同飞行进度，不向同一点收拢。两者冷却从选定片段结束开始，均为 2.5 秒。整期含开场与结尾须小于 45 秒，当前固定状态约 35.3 秒。
+- 平时显示静态图，技能期间原地播放各自选定的 MP4 透明帧序列和同起点、同时长的原声 WAV，结束恢复静态图。弹丸发射后不追踪对手；抛物线或分身直线的位置同时用于绘制和连续碰撞检测，落空不扣血。特效随机数不能改变实体轨迹。白猫每次生成两个实体；橘猫第 N 次生成 N 个分身，每个实体最多命中一次。白猫开头 7 个全透明帧使用首个有效姿势补齐，保留原声及动作时间轴。
+- 动画与伤害共用 1/60 秒逻辑时钟，不由视频回调结算。胜负确定后不启动技能、不再扣血，已开播片段完整播完再结算；本期不使用慢放，浏览器原声跟随暂停、倍速和重播。蛋状弹丸为 imagegen 生成的透明 PNG，原视频和生成参数见素材记录。
+- `npm run meme:prepare` 从 `assets/cat-meme/raw/` 生成素材，来源与裁切参数保存在 `public/memes/*/source.json`。运行 `npm run check:meme-battle`、`npm run check:audio`、`npm run typecheck` 并 dry 核对战报；改动共用战斗代码时还需运行既有三期技能检查。

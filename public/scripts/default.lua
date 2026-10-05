@@ -17,6 +17,10 @@
 local lastHitAt = 0
 local bumpCount = {}
 
+engine.on("meme_skill", function(e)
+  engine.sfx(e.sound, 0.72, 1)
+end)
+
 engine.on("collision", function(e)
   -- 节流：80ms 内的连撞只响最重的一声
   if e.t - lastHitAt < 0.08 then return end

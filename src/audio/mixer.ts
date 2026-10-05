@@ -48,6 +48,8 @@ export interface MixedSfxEvent {
   t: number;
   vol: number;
   rate: number;
+  /** 演出取消或进入结算时截断该片段（输出时间轴秒数）。 */
+  durationSec?: number;
 }
 
 export interface NarrationClip {
@@ -58,10 +60,14 @@ export interface NarrationClip {
 }
 
 function place(dst: Float32Array, src: Float32Array, startFrame: number, step: number, vol: number): void {
-  for (let i = 0; i < src.length; i++) {
-    const idx = startFrame + Math.floor(i * step);
-    if (idx >= dst.length) break;
-    dst[idx] += src[i] * vol;
+  // step 是每个输出采样对应的输入采样数。按输出取样，避免升采样空洞和降采样累加。
+  const frames = Math.ceil(src.length / step);
+  for (let i = Math.max(0, -startFrame); i < frames && startFrame + i < dst.length; i++) {
+    const pos = i * step;
+    const left = Math.floor(pos);
+    const fraction = pos - left;
+    const value = src[left] + ((src[Math.min(left + 1, src.length - 1)] ?? 0) - src[left]) * fraction;
+    dst[startFrame + i] += value * vol;
   }
 }
 
@@ -80,7 +86,9 @@ export function mixSfxFloat(
       console.warn(`[mixer] 未登记的音效：${ev.name}`);
       continue;
     }
-    place(out, w.samples, Math.floor(ev.t * sampleRate), (w.sampleRate / sampleRate) * Math.max(0.05, ev.rate), ev.vol * masterVol);
+    const rate = Math.max(0.05, ev.rate);
+    const samples = ev.durationSec === undefined ? w.samples : w.samples.subarray(0, Math.max(0, Math.ceil(ev.durationSec * rate * w.sampleRate)));
+    place(out, samples, Math.floor(ev.t * sampleRate), (w.sampleRate / sampleRate) * rate, ev.vol * masterVol);
   }
   return out;
 }

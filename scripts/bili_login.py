@@ -32,12 +32,18 @@ def post(url, params):
         return json.loads(r.read())
 
 
-def show_qr(url):
+def show_qr(url, image_path=None):
     try:
         import qrcode
         qr = qrcode.QRCode(border=1)
         qr.add_data(url)
-        qr.print_ascii(invert=True)
+        if image_path:
+            os.makedirs(os.path.dirname(os.path.abspath(image_path)), exist_ok=True)
+            qr.make(fit=True)
+            qr.make_image(fill_color="black", back_color="white").save(image_path)
+            print(f"登录二维码已保存：{os.path.abspath(image_path)}", flush=True)
+        else:
+            qr.print_ascii(invert=True)
     except ImportError:
         print(f"（pip install qrcode 可显示二维码）请把下面的链接转成二维码后用B站App扫码：\n{url}")
 
@@ -45,13 +51,14 @@ def show_qr(url):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="cookies.json")
+    ap.add_argument("--qr-path", default=None, help="将登录二维码保存为图片")
     args = ap.parse_args()
 
     r = post(AUTH_URL, signed({"appkey": APPKEY, "local_id": "0"}))
     if r.get("code") != 0:
         raise SystemExit(f"生成二维码失败：{r}")
     auth_code = r["data"]["auth_code"]
-    show_qr(r["data"]["url"])
+    show_qr(r["data"]["url"], args.qr_path)
     print("等待扫码确认（最长 180 秒）…")
 
     params = signed({"appkey": APPKEY, "auth_code": auth_code, "local_id": "0"})
