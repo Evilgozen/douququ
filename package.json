@@ -29,7 +29,9 @@
     "sprite": "tsx src/cli/sprite.ts",
     "sprite:norm": "tsx src/cli/sprite.ts --norm",
     "rl": "tsx src/cli/rl.ts",
-    "rl:serve": "tsx src/rl/server.ts"
+    "rl:serve": "tsx src/rl/server.ts",
+    "meme:prepare:ep016": "node --import tsx scripts/prepare_cat_meme_ep016.ts",
+    "check:meme-ep016": "node --import tsx scripts/check_cat_meme_ep016.ts"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",

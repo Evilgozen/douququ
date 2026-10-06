@@ -61,7 +61,7 @@ export interface MemeSkillDef {
   frameCount: number;
   fps: number;
   sound: string;
-  effect?: { kind: 'eggs' | 'clones'; sprite?: string; launchTimes: number[]; speed: number; cloneGrowth?: boolean };
+  effect?: { kind: 'eggs' | 'clones' | 'soundwave' | 'mines'; sprite?: string; blastSprite?: string; launchTimes: number[]; speed: number; cloneGrowth?: boolean; radius?: number; warning?: number; spread?: number };
 }
 
 export interface FighterDef {

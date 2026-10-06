@@ -1,0 +1,58 @@
+id: ep016-oi-vs-shake
+title: oi猫 VS 摇摇猫
+subtitle: 定向喊声波 VS 摇摆抖雷
+seed: 16001
+endDuration: 2.4
+combat: { mode: readable, movement: bounce }
+script: cat-meme
+fighters:
+  - id: shake
+    name: 摇摇猫
+    color: '#ffb347'
+    sprite: memes/shake/idle.png
+    hp: 420
+    atk: 0
+    defense: 0
+    speed: 300
+    radius: 75
+    memeSkill:
+      name: 摇摆抖雷
+      trigger: timer
+      every: 5.5
+      initialCooldown: 6.2
+      duration: 5
+      hitAt: 0.35
+      damage: 60
+      range: 300
+      framePrefix: memes/shake/
+      frameCount: 75
+      fps: 15
+      sound: meme_shake
+      effect: { kind: mines, sprite: memes/fx/mine-v2.png, blastSprite: memes/fx/blast-v2.png, launchTimes: [0.7, 1.7, 2.7], speed: 640, radius: 100, warning: 1 }
+  - id: oi
+    name: oi猫
+    color: '#7dd3fc'
+    sprite: memes/oi/idle.png
+    hp: 420
+    atk: 0
+    defense: 0
+    speed: 260
+    radius: 75
+    memeSkill:
+      name: oi定向喊声波
+      trigger: timer
+      every: 5.5
+      initialCooldown: 1
+      duration: 5
+      hitAt: 0.8
+      damage: 60
+      range: 680
+      framePrefix: memes/oi/
+      frameCount: 75
+      fps: 15
+      sound: meme_oi
+      effect: { kind: soundwave, sprite: memes/fx/wave-v2.png, launchTimes: [0.53, 1.87, 3.38], speed: 720, radius: 22, spread: 70 }
+captions:
+  - { t: 0.5, text: 喊声发出定向波，雷盘预警一秒爆炸, dur: 3.8 }
+  - { t: 16.5, text: 声波不追踪，离开橙色雷区就能躲开, dur: 3.2 }
+bgm: { vol: 0 }

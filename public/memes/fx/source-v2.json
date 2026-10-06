@@ -1,0 +1,14 @@
+{
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "assets": [
+    "wave-v2.png",
+    "mine-v2.png",
+    "blast-v2.png"
+  ],
+  "prompts": {
+    "wave": "Game VFX sprite, single directional sonic shockwave for a cute cat meme battle on black background. Transparent background. A bright cyan blue-white curved arc, viewed straight top-down in a 2D arena, centered at image center, opens toward RIGHT, occupies a 70-degree cone pointing right. Three closely packed luminous curved sound crests with sharp cyan edges, wispy energy texture and short electric sparks. Origin at image center; outermost arc on right. The entire graphic within circular radius 42 percent image width, ample transparent padding, left half largely empty. No characters, no environment, no words, no UI, no frame. Raster game sprite, punchy comic energy, legible small.",
+    "mine": "Single cute sci-fi cat paw landmine disc sprite for a 2D cat meme arena. Transparent background. Top-down circular low-profile orange metallic disc centered, bold orange paw print embossed at center, amber rim lights, tiny segmented glow on outer rim, graphic anime game aesthetic, warm orange yellow palette, subtle dimensional shading. Circle diameter 65 percent canvas, plenty transparent margin. No characters, no floor, no scene, no text, no shadow outside disc. Crisp silhouette and readable at 60 pixels.",
+    "blast": "Single circular fiery explosion VFX sprite for a playful 2D cat meme battle, transparent background. Centered top-down radial orange amber burst with luminous white-yellow core, orange comic flame petals, radial sparks and compact wispy smoke, essentially circular symmetric silhouette, diameter 80 percent canvas, padding around all sparks. No objects, no characters, no scenery, no text, no UI. Punchy polished raster game sprite that reads clearly over black."
+  }
+}

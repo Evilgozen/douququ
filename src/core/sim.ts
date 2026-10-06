@@ -9,7 +9,7 @@ import { fmt } from './bignum';
 import { evalTwists } from './twists';
 import { Fighter, type AttackResult } from './fighter';
 import { pointOnTrack, type TrackPoint } from './trainDemo';
-import { memeProjectilePosition } from './memeMotion';
+import { memeProjectilePosition, soundwaveOverlaps } from './memeMotion';
 import type { Episode, FighterDef, SkillDef } from './types';
 
 export const W = 1080;
@@ -199,7 +199,7 @@ export interface Projectile {
   color?: string;
   /** 专属素材（火锅/奶茶等），优先于袋子绘制 */
   sprite?: string;
-  meme?: { kind: 'eggs' | 'clones'; delay: number; launched: boolean; radius: number; volleyOffset?: { x: number; y: number } };
+  meme?: { kind: 'eggs' | 'clones' | 'soundwave' | 'mines'; delay: number; launched: boolean; radius: number; volleyOffset?: { x: number; y: number }; age?: number; angle?: number; spread?: number; reach?: number; warning?: number; index?: number; hit?: boolean; blastSprite?: string };
   /** 命中减速（冰美式等），单位：秒/倍率 */
   slowSec?: number;
   slowMult?: number;
@@ -582,6 +582,11 @@ export class Battle {
         st.popups.push(mkPopup('skill', u.x, u.y - 150, m.effect?.cloneGrowth ? `${m.name} ×${u.meme.casts}` : m.name, 1, u.color, 34));
         st.events.push({ type: 'meme_skill', t: st.t, unit: u.def.id, sound: m.sound, name: m.name });
         if (m.effect) {
+          if (m.effect.kind === 'soundwave' || m.effect.kind === 'mines') {
+            for (const [index, delay] of m.effect.launchTimes.entries()) {
+              st.projectiles.push({ ownerUid: u.uid, side: u.side, weaponName: m.name, damage: m.damage, speed: m.effect.speed, sx: u.x, sy: u.y, tx: target.x, ty: target.y, t: 0, totalTime: 0.45, arc: false, life: delay + 8, sprite: m.effect.sprite, color: u.color, meme: { kind: m.effect.kind, delay, launched: false, radius: m.effect.radius ?? 100, reach: m.range, spread: m.effect.spread ?? 70, warning: m.effect.warning ?? 1, index, blastSprite: m.effect.blastSprite } });
+            }
+          } else {
           const d = Math.hypot(target.x - u.x, target.y - u.y) || 1;
           const nx = (target.x - u.x) / d, ny = (target.y - u.y) / d;
           const growing = m.effect.cloneGrowth === true;
@@ -600,6 +605,7 @@ export class Battle {
             const sx = volleyOffset ? Math.max(ARENA.left + marginX, Math.min(ARENA.right - marginX, u.x - nx * pullback)) + volleyOffset.x : Math.max(ARENA.left + 45, Math.min(ARENA.right - 45, u.x - nx * centerCloneBack - ny * offset * cloneSide));
             const sy = volleyOffset ? Math.max(ARENA.top + marginY, Math.min(ARENA.bottom - marginY, u.y - ny * pullback)) + volleyOffset.y : Math.max(ARENA.top + 70, Math.min(ARENA.bottom - 70, u.y - ny * centerCloneBack + nx * offset * cloneSide));
             st.projectiles.push({ ownerUid: u.uid, side: u.side, weaponName: m.name, damage: m.damage, speed: m.effect.speed, sx, sy, tx: target.x, ty: target.y, t: 0, totalTime: 1, arc: m.effect.kind === 'eggs', life: delay + 5, sprite: m.effect.sprite ?? u.def.sprite, color: u.color, meme: { kind: m.effect.kind, delay, launched: false, radius: m.effect.kind === 'eggs' ? 32 : 55, volleyOffset } });
+          }
           }
         }
       }
@@ -1488,6 +1494,50 @@ export class Battle {
     for (const pr of st.projectiles) {
       if (pr.life <= 0) continue;
       if (pr.meme) {
+        if (pr.meme.kind === 'soundwave' || pr.meme.kind === 'mines') {
+          const m = pr.meme;
+          m.delay -= dt;
+          if (m.delay > 1e-9) { alive.push(pr); continue; }
+          const owner = st.units.find(u => u.uid === pr.ownerUid)!;
+          const target = st.units.find(u => u.side !== pr.side)!;
+          if (!m.launched) {
+            m.launched = true; m.age = 0; pr.sx = owner.x; pr.sy = owner.y;
+            m.angle = Math.atan2(target.y - owner.y, target.x - owner.x);
+            if (m.kind === 'mines') {
+              const offset = ((m.index ?? 1) - 1) * 130;
+              const reflect = (value: number, lo: number, hi: number) => {
+                const width = hi - lo, phase = ((value - lo) % (2 * width) + 2 * width) % (2 * width);
+                return lo + (phase > width ? 2 * width - phase : phase);
+              };
+              const lead = pr.totalTime + m.warning!;
+              const aimX = reflect(target.x + target.vx * lead, ARENA.left + target.r, ARENA.right - target.r);
+              const aimY = reflect(target.y + target.vy * lead, ARENA.top + target.r, ARENA.bottom - target.r);
+              pr.tx = Math.max(ARENA.left + m.radius, Math.min(ARENA.right - m.radius, aimX - Math.sin(m.angle) * offset));
+              pr.ty = Math.max(ARENA.top + m.radius, Math.min(ARENA.bottom - m.radius, aimY + Math.cos(m.angle) * offset));
+              pr.life = pr.totalTime + m.warning! + 0.35;
+            } else pr.life = m.reach! / pr.speed + 0.05;
+          }
+          const before = m.age!;
+          m.age! += dt;
+          pr.t = Math.min(1, m.age! / pr.totalTime);
+          const damageAllowed = st.phase === 'fight' && st.units.every(u => u.alive);
+          if (m.kind === 'soundwave') {
+            const r0 = before * pr.speed, r1 = Math.min(m.reach!, m.age! * pr.speed);
+            if (!m.hit && damageAllowed && soundwaveOverlaps(pr, target.x, target.y, target.r, r0, r1)) {
+              m.hit = true; this.applyDamage(owner, target, a2r({ name: pr.weaponName }, pr.damage, 1));
+            }
+            if (r1 >= m.reach!) {
+              if (!m.hit && damageAllowed) st.popups.push(mkPopup('block', pr.sx + Math.cos(m.angle!) * r1, pr.sy + Math.sin(m.angle!) * r1, '落空', 1, '#aaaaaa', 28));
+              continue;
+            }
+          } else if (before < pr.totalTime + m.warning! && m.age! >= pr.totalTime + m.warning!) {
+            m.hit = true;
+            if (damageAllowed && Math.hypot(target.x - pr.tx, target.y - pr.ty) <= m.radius + target.r) this.applyDamage(owner, target, a2r({ name: pr.weaponName }, pr.damage, 1));
+            else if (damageAllowed) st.popups.push(mkPopup('block', pr.tx, pr.ty - 50, '落空', 1, '#aaaaaa', 28));
+            st.sfx.push({ name: 'hit_heavy', t: st.t, vol: 0.22, rate: 1 });
+          }
+          alive.push(pr); continue;
+        }
         pr.meme.delay -= dt;
         if (pr.meme.delay > 1e-9) { alive.push(pr); continue; }
         if (!pr.meme.launched) {
@@ -1635,7 +1685,7 @@ export class Battle {
       : atk.damage;
     const crit = atk.crit;
     const skillName = atk.skill?.name ?? null;
-    if (!silent && atk.skill) {
+    if (!silent && atk.skill && a.def.memeSkill?.effect?.kind !== 'soundwave' && a.def.memeSkill?.effect?.kind !== 'mines') {
       // 技能光束：从攻击者到目标的发光弹道
       st.beams.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, life: 0.2, maxLife: 0.2, color: '#7dd3fc', width: 9 });
       // 技能名标签（垂直贴身时往侧面放飞，避免压住另一单位的名牌）
@@ -1835,6 +1885,7 @@ export class Battle {
     st.feed = [];
     st.captions = [];
     if (st.rail?.echo) st.rail.echo.images = [];
+    if (st.units.some(u => u.def.memeSkill)) st.projectiles = [];
     st.feed.push({ text: '战斗结束', life: 3 });
     st.events.push({ type: 'phase', t: st.t, name: 'end' });
   }

@@ -65,13 +65,15 @@ function normFighter(raw: unknown, i: number): FighterDef {
         const e = m.effect as Record<string, unknown> | undefined;
         if (!e) return undefined;
         const kind = reqStr(e.kind, `${who}.memeSkill.effect.kind`);
-        if (kind !== 'eggs' && kind !== 'clones') throw new Error('meme effect 必须是 eggs/clones');
+        if (kind !== 'eggs' && kind !== 'clones' && kind !== 'soundwave' && kind !== 'mines') throw new Error('未知 meme effect');
         const launchTimes = Array.isArray(e.launchTimes) ? e.launchTimes.map(Number) : [];
-        if (launchTimes.length !== 2 || launchTimes.some((t) => !Number.isFinite(t) || t < 0 || t >= duration) || launchTimes[0] > launchTimes[1] || (kind === 'clones' && launchTimes[0] === launchTimes[1])) throw new Error('发射时间须在动作内；双蛋可同时发射，分身须依次发射');
+        if (launchTimes.length !== (kind === 'soundwave' || kind === 'mines' ? 3 : 2) || launchTimes.some((t, i) => !Number.isFinite(t) || t < 0 || t >= duration || (i > 0 && t < launchTimes[i - 1])) || (kind === 'clones' && launchTimes[0] === launchTimes[1])) throw new Error('发射时间须按顺序位于动作内；新技能每轮三次');
         const sprite = typeof e.sprite === 'string' ? e.sprite : undefined;
         if (kind === 'eggs' && !sprite) throw new Error('eggs 需要弹丸 sprite');
         if (e.cloneGrowth !== undefined && (typeof e.cloneGrowth !== 'boolean' || kind !== 'clones')) throw new Error('cloneGrowth 仅可用于分身，且必须为布尔值');
-        return { kind: kind as 'eggs' | 'clones', sprite, launchTimes, speed: reqPos(e.speed, `${who}.memeSkill.effect.speed`), cloneGrowth: e.cloneGrowth === true };
+        if ((kind === 'mines' || kind === 'soundwave') && !sprite) throw new Error('新技能需要特效 sprite');
+        const blastSprite = typeof e.blastSprite === 'string' ? e.blastSprite : undefined;
+        return { kind: kind as 'eggs' | 'clones' | 'soundwave' | 'mines', sprite, blastSprite, launchTimes, speed: reqPos(e.speed, `${who}.memeSkill.effect.speed`), cloneGrowth: e.cloneGrowth === true, radius: e.radius === undefined ? undefined : reqPos(e.radius, 'effect.radius'), warning: e.warning === undefined ? undefined : reqPos(e.warning, 'effect.warning'), spread: e.spread === undefined ? undefined : reqPos(e.spread, 'effect.spread') };
       })();
       return { name: reqStr(m.name, `${who}.memeSkill.name`), trigger, every: reqPos(m.every, `${who}.memeSkill.every`), initialCooldown, duration, hitAt, damage: reqPos(m.damage, `${who}.memeSkill.damage`), range: reqPos(m.range, `${who}.memeSkill.range`), framePrefix: reqStr(m.framePrefix, `${who}.memeSkill.framePrefix`), frameCount, fps, sound: reqStr(m.sound, `${who}.memeSkill.sound`), effect };
     })(),

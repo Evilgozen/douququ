@@ -686,7 +686,7 @@ function drawHud(ctx: Ctx, st: BattleState): void {
         const active = u.meme.elapsed !== null && st.phase === 'fight';
         const label = active ? `动作剩余 ${(m.duration - u.meme.elapsed!).toFixed(1)}s` : u.meme.cooldown > 0 ? `技能 CD ${u.meme.cooldown.toFixed(1)}s` : m.trigger === 'collision' ? '等待碰撞' : '定时释放';
         ctx.textAlign = side === 0 ? 'left' : 'right'; ctx.font = font(22); ctx.fillStyle = '#e7edf8';
-        ctx.fillText(`${m.effect?.kind === 'eggs' ? '双蛋弹丸' : m.effect?.kind === 'clones' ? m.effect.cloneGrowth ? `分身 ×${active ? u.meme.casts : u.meme.casts + 1}${active ? '' : '（下轮）'}` : '双分身' : m.trigger === 'collision' ? '碰撞技能' : '定时技能'} · ${m.effect ? '每次命中' : '固定伤害'} ${m.damage}`, side === 0 ? x : x + bw, y0 + 78);
+        ctx.fillText(`${m.effect?.kind === 'soundwave' ? '定向声波 ×3' : m.effect?.kind === 'mines' ? '延迟雷盘 ×3' : m.effect?.kind === 'eggs' ? '双蛋弹丸' : m.effect?.kind === 'clones' ? m.effect.cloneGrowth ? `分身 ×${active ? u.meme.casts : u.meme.casts + 1}${active ? '' : '（下轮）'}` : '双分身' : m.trigger === 'collision' ? '碰撞技能' : '定时技能'} · ${m.effect ? '每次命中' : '固定伤害'} ${m.damage}`, side === 0 ? x : x + bw, y0 + 78);
         ctx.fillText(label, side === 0 ? x : x + bw, y0 + 110);
         const progress = active ? u.meme.elapsed! / m.duration : 1 - u.meme.cooldown / Math.max(m.every, m.initialCooldown);
         ctx.fillStyle = '#202938'; rr(ctx, x, y0 + 122, bw, 12, 6); ctx.fill();

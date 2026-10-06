@@ -173,6 +173,50 @@ export function drawShocks(ctx: Ctx, st: BattleState): void {
 /** 飞行道具绘制：专属素材（火锅/奶茶）> 外卖袋 > 公文包；抛物线高度 + 地面影子 + 名字 */
 export function drawProjectiles(ctx: Ctx, st: BattleState, assets?: Assets): void {
   for (const pr of st.projectiles) {
+    if (pr.meme?.kind === 'soundwave' || pr.meme?.kind === 'mines') {
+      const m = pr.meme;
+      if (!m.launched) continue;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ARENA.left, ARENA.top, ARENA.right - ARENA.left, ARENA.bottom - ARENA.top); ctx.clip();
+      if (m.kind === 'soundwave') {
+        const r = Math.min(m.reach!, m.age! * pr.speed), a = m.spread! * Math.PI / 360;
+        ctx.translate(pr.sx, pr.sy); ctx.rotate(m.angle!);
+        ctx.beginPath(); ctx.arc(0, 0, r + m.radius, -a, a);
+        ctx.arc(0, 0, Math.max(0, r - m.radius), a, -a, true); ctx.closePath();
+        ctx.fillStyle = '#50dcff55'; ctx.fill();
+        ctx.save(); ctx.clip();
+        const sprite = pr.sprite ? assets?.get(pr.sprite) : undefined;
+        if (sprite) {
+          const scale = (r + m.radius) / (sprite.w * 0.42);
+          ctx.drawImage(sprite.img as CanvasImageSource, -sprite.w * scale / 2, -sprite.h * scale / 2, sprite.w * scale, sprite.h * scale);
+        }
+        ctx.restore(); ctx.strokeStyle = '#8ef0ff'; ctx.lineWidth = 3; ctx.stroke();
+      } else {
+        const flying = m.age! < pr.totalTime;
+        const blast = m.age! >= pr.totalTime + m.warning!;
+        const point = flying ? memeProjectilePosition(pr) : { x: pr.tx, y: pr.ty };
+        ctx.translate(point.x, point.y - (flying ? 90 * Math.sin(pr.t * Math.PI) : 0));
+        if (!flying) {
+          ctx.beginPath(); ctx.arc(0, 0, m.radius, 0, Math.PI * 2);
+          ctx.fillStyle = blast ? '#ff8b2833' : '#ff8b281c'; ctx.fill();
+          ctx.strokeStyle = blast ? '#fff0a1' : '#ffac45'; ctx.lineWidth = 3; ctx.stroke();
+          if (!blast) {
+            const left = Math.max(0, pr.totalTime + m.warning! - m.age!);
+            ctx.beginPath(); ctx.arc(0, 0, m.radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left / m.warning!);
+            ctx.strokeStyle = '#fff0a1'; ctx.lineWidth = 7; ctx.stroke();
+            ctx.fillStyle = '#fff0a1'; ctx.font = 'bold 24px "Microsoft YaHei",sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(left.toFixed(1) + 's', 0, -m.radius - 12);
+          }
+        }
+        const sprite = assets?.get(blast ? m.blastSprite! : pr.sprite!);
+        if (sprite) {
+          const size = blast ? m.radius * 2.5 : flying ? 72 : 92;
+          if (blast) ctx.globalAlpha = Math.max(0, 1 - (m.age! - pr.totalTime - m.warning!) / 0.35);
+          ctx.drawImage(sprite.img as CanvasImageSource, -size / 2, -size / 2, size, size);
+        }
+      }
+      ctx.restore(); continue;
+    }
     if (pr.meme) {
       if (pr.meme.kind === 'eggs' && !pr.meme.launched) continue;
       const point = memeProjectilePosition(pr);

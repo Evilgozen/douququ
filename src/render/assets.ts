@@ -9,6 +9,7 @@ export function collectSpritePaths(ep: Episode): string[] {
     if (f.sprite) paths.add(f.sprite);
     if (f.memeSkill) for (let i = 0; i < f.memeSkill.frameCount; i++) paths.add(memeFramePath(f.memeSkill, i));
     if (f.memeSkill?.effect?.sprite) paths.add(f.memeSkill.effect.sprite);
+    if (f.memeSkill?.effect?.blastSprite) paths.add(f.memeSkill.effect.blastSprite);
     if (f.stateSprites?.bike) paths.add(f.stateSprites.bike);
     if (f.stateSprites?.stun) paths.add(f.stateSprites.stun);
     if (f.stateSprites?.block) paths.add(f.stateSprites.block);
